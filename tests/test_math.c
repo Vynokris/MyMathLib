@@ -14,9 +14,9 @@ int main()
 
     printf("\n----- TESTING Vector2 MATH FUNCTIONS -----\n");
     printf("Vector2Zero                        = { %d, %d }\n", (int)Vector2Zero().x, (int)Vector2Zero().y);
-    Vector2 vec_from_rot = Vector2FromAngle(PI, 1);
-    printf("Vector2FromRotation(pi, 1)         = { %d, %d }\n", roundInt(vec_from_rot.x), roundInt(vec_from_rot.y));
-    printf("Vector2GetAngle(vec_from_rot)  = %f\n", Vector2GetAngle(vec_from_rot));
+    Vector2 vec_from_rot = Vector2FromAngle(PI, 2);
+    printf("Vector2FromAngle   (pi, 1)          = { %d, %d }\n", roundInt(vec_from_rot.x), roundInt(vec_from_rot.y));
+    printf("Vector2GetAngle    (vec_from_rot)   = %f\n", Vector2GetAngle(vec_from_rot));
     Vector2 vec_add = Vector2Add((Vector2){1, 2}, (Vector2){3, 4});
     printf("Vector2Add         ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_add.x, (int)vec_add.y);
     Vector2 vec_add_val = Vector2AddVal((Vector2){1, 2}, 3);
@@ -30,6 +30,8 @@ int main()
     Vector2 vec_div = Vector2Divide((Vector2){1, 2}, (Vector2){3, 4});
     printf("Vector2Divide      ({1, 2}, {3, 4}) = { %f, %f }\n", vec_div.x, vec_div.y);
     printf("Vector2Length      ({1, 1})         = %f\n", Vector2Length((Vector2){1, 1}));
+    Vector2 vec_set_len = Vector2SetLength((Vector2){2, 0}, 1);
+    printf("Vector2SetLength   ({2, 0}, 1)      = { %d, %d }\n", roundInt(vec_set_len.x), roundInt(vec_set_len.y));
     Vector2 vec_neg = Vector2Negate((Vector2){1, -2});
     printf("Vector2Negate      ({1, -2})        = { %d, %d }\n", (int)vec_neg.x, (int)vec_neg.y);
     Vector2 vec_norm = Vector2Normalize((Vector2){1, 2});

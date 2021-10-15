@@ -151,18 +151,6 @@ Vector2 Vector2Zero()
     return (Vector2){ 0, 0 };
 }
 
-// Creates a vector given a rotation and a length.
-Vector2 Vector2FromAngle(double rad, double length)
-{
-    return (Vector2){ cos(rad) * length, sin(rad) * length };
-}
-
-// Returns the angle of the given vector.
-double Vector2GetAngle(Vector2 v)
-{
-    return acos(v.x);
-}
-
 // Adds two vectors together.
 Vector2 Vector2Add(Vector2 v1, Vector2 v2)
 {
@@ -205,16 +193,34 @@ double Vector2Length(Vector2 v)
     return sqrt(sqpow(v.x) + sqpow(v.y));
 }
 
-// Negates the values of the given vector.
-Vector2 Vector2Negate(Vector2 v)
-{
-    return (Vector2){ -v.x, -v.y };
-}
-
 // Normalizes the given vector.
 Vector2 Vector2Normalize(Vector2 v)
 {
     return (Vector2){ v.x / Vector2Length(v), v.y / Vector2Length(v) };
+}
+
+// Creates a vector given a rotation and a length.
+Vector2 Vector2FromAngle(double rad, double length)
+{
+    return (Vector2){ cos(rad) * length, sin(rad) * length };
+}
+
+// Returns the angle of the given vector.
+double Vector2GetAngle(Vector2 v)
+{
+    return acos(Vector2Normalize(v).x);
+}
+
+// Resizes the given vector to the given length.
+Vector2 Vector2SetLength(Vector2 v, double length)
+{
+    return Vector2FromAngle(Vector2GetAngle(v), length);
+}
+
+// Negates the values of the given vector.
+Vector2 Vector2Negate(Vector2 v)
+{
+    return (Vector2){ -v.x, -v.y };
 }
 
 // Returns the dot product of two vectors.
