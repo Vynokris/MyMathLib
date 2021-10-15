@@ -3,47 +3,44 @@
 
 int main()
 {
-    printf("\n----- TESTING MATH FUNCTIONS -----\n");
-    printf("abs(-1) = %d\n", (int)absolute(-1));
-    printf("2^2 = %d\n", (int)sqpow(2));
-    printf("2^4 = %d\n", (int)power(2, 4));
-    printf("2^-2 = %f\n", power(2, -2));
-    printf("sqrt(81) = %d\n", (int)sqroot(8));
-    printf("ceil(0.2) = %d\n", ceilVal(0.2));
-    printf("floor(0.8) = %d\n", floorVal(0.8));
-    printf("round(0.2) = %d\n", roundVal(0.2));
-    printf("round(0.8) = %d\n", roundVal(0.8));
-    printf("copySign(-10, -5) = %d\n", (int)copySign(-10, -5));
-    printf("max(5, 10) = %d\n", (int)max(5, 10));
-    printf("min(5, 10) = %d\n", (int)min(5, 10));
-
     printf("\n----- TESTING MATH UTILITY FUNCTIONS -----\n");
-    printf("degToRad(180) = %f\n", degToRad(180));
-    printf("radToDeg(PI) = %f\n", radToDeg(PI));
-    printf("clamp(11, 0, 10) = %d\n", (int)clamp(11, 0, 10));
-    printf("clamp(-1, 0, 10) = %d\n", (int)clamp(-1, 0, 10));
+    printf("sqpow(2)           = %d\n", (int)sqpow(2));
+    printf("degToRad(180)      = %f\n", degToRad(180));
+    printf("radToDeg(PI)       = %d\n", roundInt(radToDeg(PI)));
+    printf("clamp(11, 0, 10)   = %d\n", (int)clamp(11, 0, 10));
+    printf("clamp(-1, 0, 10)   = %d\n", (int)clamp(-1, 0, 10));
     printf("clampUnder(11, 10) = %d\n", (int)clampUnder(11, 10));
-    printf("clampAbove(-1, 0) = %d\n", (int)clampAbove(-1, 0));
+    printf("clampAbove(-1, 0)  = %d\n", (int)clampAbove(-1, 0));
 
-    printf("\n----- TESTING VECTOR MATH FUNCTIONS -----\n");
-    printf("vectorZero = { %d, %d }\n", (int)vectorZero().x, (int)vectorZero().y);
-    Vector vec_add = vectorAdd((Vector){1, 2}, (Vector){3, 4});
-    printf("vectorAdd({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_add.x, (int)vec_add.y);
-    Vector vec_add_val = vectorAddVal((Vector){1, 2}, 3);
-    printf("vectorAddVal({1, 2}, 3) = { %d, %d }\n", (int)vec_add_val.x, (int)vec_add_val.y);
-    Vector vec_sub = vectorSubstract((Vector){1, 2}, (Vector){3, 4});
-    printf("vectorSubstract({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_sub.x, (int)vec_sub.y);
-    Vector vec_mult = vectorMultiply((Vector){1, 2}, (Vector){3, 4});
-    printf("vectorMultiply({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_mult.x, (int)vec_mult.y);
-    Vector vec_mult_val = vectorMultiplyVal((Vector){1, 2}, 3);
-    printf("vectorMultiplyVal({1, 2}, 3) = { %d, %d }\n", (int)vec_mult_val.x, (int)vec_mult_val.y);
-    Vector vec_div = vectorDivide((Vector){1, 2}, (Vector){3, 4});
-    printf("vectorDivide({1, 2}, {3, 4}) = { %f, %f }\n", vec_div.x, vec_div.y);
-    printf("vectorLength({1, 1}) = %f\n", vectorLength((Vector){1, 1}));
-    Vector vec_neg = vectorNegate((Vector){1, -2});
-    printf("vectorNegate({1, -2}) = { %d, %d }\n", (int)vec_neg.x, (int)vec_neg.y);
-    Vector vec_norm = vectorNormalize((Vector){1, 2});
-    printf("vectorNormalize({1, 2}) = { %f, %f } of length = %d\n", vec_norm.x, vec_norm.y, roundVal(vectorLength(vec_norm)));
+    printf("\n----- TESTING Vector2 MATH FUNCTIONS -----\n");
+    printf("Vector2Zero                        = { %d, %d }\n", (int)Vector2Zero().x, (int)Vector2Zero().y);
+    Vector2 vec_from_rot = Vector2FromAngle(PI, 1);
+    printf("Vector2FromRotation(pi, 1)         = { %d, %d }\n", roundInt(vec_from_rot.x), roundInt(vec_from_rot.y));
+    printf("Vector2GetAngle(vec_from_rot)  = %f\n", Vector2GetAngle(vec_from_rot));
+    Vector2 vec_add = Vector2Add((Vector2){1, 2}, (Vector2){3, 4});
+    printf("Vector2Add         ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_add.x, (int)vec_add.y);
+    Vector2 vec_add_val = Vector2AddVal((Vector2){1, 2}, 3);
+    printf("Vector2AddVal      ({1, 2}, 3)      = { %d, %d }\n", (int)vec_add_val.x, (int)vec_add_val.y);
+    Vector2 vec_sub = Vector2Substract((Vector2){1, 2}, (Vector2){3, 4});
+    printf("Vector2Substract   ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_sub.x, (int)vec_sub.y);
+    Vector2 vec_mult = Vector2Multiply((Vector2){1, 2}, (Vector2){3, 4});
+    printf("Vector2Multiply    ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_mult.x, (int)vec_mult.y);
+    Vector2 vec_mult_val = Vector2MultiplyVal((Vector2){1, 2}, 3);
+    printf("Vector2MultiplyVal ({1, 2}, 3)      = { %d, %d }\n", (int)vec_mult_val.x, (int)vec_mult_val.y);
+    Vector2 vec_div = Vector2Divide((Vector2){1, 2}, (Vector2){3, 4});
+    printf("Vector2Divide      ({1, 2}, {3, 4}) = { %f, %f }\n", vec_div.x, vec_div.y);
+    printf("Vector2Length      ({1, 1})         = %f\n", Vector2Length((Vector2){1, 1}));
+    Vector2 vec_neg = Vector2Negate((Vector2){1, -2});
+    printf("Vector2Negate      ({1, -2})        = { %d, %d }\n", (int)vec_neg.x, (int)vec_neg.y);
+    Vector2 vec_norm = Vector2Normalize((Vector2){1, 2});
+    printf("Vector2Normalize   ({1, 2})         = { %f, %f } of length = %d\n", vec_norm.x, vec_norm.y, roundInt(Vector2Length(vec_norm)));
+    printf("Vector2DotProduct  ({0, 1}, {1, 0}) = %d\n", roundInt(Vector2DotProduct((Vector2){0, 1}, (Vector2){1, 0})));
+    printf("Vector2CrossProduct({0, 1}, {0, 1}) = %d\n", roundInt(Vector2CrossProduct((Vector2){0, 1}, (Vector2){0, 1})));
+    printf("Vector2Angle       ({0, 1}, {1, 0}) = %d\n", roundInt(radToDeg(Vector2Angle((Vector2){0, 1}, (Vector2){1, 0}))));
+    Vector2 vec_rotate = Vector2Rotate((Vector2){0, 1}, PI/2);
+    printf("Vector2Rotate      ({0, 1}, pi/2)   = { %d, %d }\n", roundInt(vec_rotate.x), roundInt(vec_rotate.y));
+
+    printf("\n");
 
     return 0;
 }

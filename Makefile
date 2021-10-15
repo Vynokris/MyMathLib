@@ -1,9 +1,9 @@
-CFLAGS=-O0 -g -Wall -Iinclude
+CFLAGS=-O0 -g -Wall -Iinclude -lm
 CPPFLAGS=-MMD
 LDFLAGS=
 LDLIBS=
 
-OBJS=tests/test_math.o src/my_math.o
+OBJS=tests/test_math.o
 DEPS=$(OBJS:.o=.d)
 
 .PHONY: all clean
