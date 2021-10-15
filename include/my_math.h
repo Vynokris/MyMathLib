@@ -1,4 +1,7 @@
 #pragma once
+#ifndef MY_MATH_H
+#define MY_MATH_H
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -12,42 +15,41 @@
 
 // ---------- STRUCTURES ---------- //
 
-// Point structure that holds values for x and y.
-typedef struct Point {
-    double x, y;
-} Point;
-
 // Vector structure that holds values for x and y.
+#ifndef RAYLIB_H
 typedef struct Vector2 {
     double x, y;
 } Vector2;
+#endif
 
 // Sgment structure that holds values for the starting point and the end point.
 typedef struct Segment {
-    Point a, b;
+    Vector2 a, b;
 } Segment;
 
 // Triangle structure that holds values for 3 points.
 typedef struct Triangle {
-    Point a, b, c;
+    Vector2 a, b, c;
 } Triangle;
 
 // Rectangle structure that holds values for the origin point, width and height.
+#ifndef RAYLIB_H
 typedef struct Rectangle {
-    Point origin;
+    Vector2 origin;
     double width, height;
 } Rectangle;
+#endif
 
 // Polygon structure that holds values for the origin point, the radius and the number of sides.
 typedef struct Polygon {
-    Point origin;
+    Vector2 origin;
     double radius;
     int sides;
 } Polygon;
 
 // Circle structure that holds values for the origin point and radius.
 typedef struct Circle {
-    Point origin;
+    Vector2 origin;
     double radius;
 } Circle;
 
@@ -250,3 +252,5 @@ Vector2 Vector2Rotate(Vector2 v, double angle)
     double v_angle = Vector2GetAngle(v);
     return Vector2FromAngle(v_angle + angle, v_length);
 }
+
+#endif
