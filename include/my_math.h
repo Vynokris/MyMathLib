@@ -3,57 +3,51 @@
 #define MY_MATH_H
 
 #include <assert.h>
+#include <raylib.h>
 #include <math.h>
 #include <stdlib.h>
-
 
 // ---------- DEFINITIONS --------- //
 
 #define PI 3.14159265358979323846f
-
-
+#define TO_RAY_V2(v) (*(*Vector2) & v)
+#define TO_RAY_REC(r) (*(*Rectangle) & r)
 
 // ---------- STRUCTURES ---------- //
 
 // Vector structure that holds values for x and y.
-#ifndef RAYLIB_H
-typedef struct Vector2 {
+typedef struct MyVector2 {
     double x, y;
-} Vector2;
-#endif
+} MyVector2;
 
 // Sgment structure that holds values for the starting point and the end point.
 typedef struct Segment {
-    Vector2 a, b;
+    MyVector2 a, b;
 } Segment;
 
 // Triangle structure that holds values for 3 points.
 typedef struct Triangle {
-    Vector2 a, b, c;
+    MyVector2 a, b, c;
 } Triangle;
 
 // Rectangle structure that holds values for the origin point, width and height.
-#ifndef RAYLIB_H
-typedef struct Rectangle {
-    Vector2 origin;
+typedef struct MyRectangle {
+    MyVector2 origin;
     double width, height;
-} Rectangle;
-#endif
+} MyRectangle;
 
 // Polygon structure that holds values for the origin point, the radius and the number of sides.
 typedef struct Polygon {
-    Vector2 origin;
+    MyVector2 origin;
     double radius;
     int sides;
 } Polygon;
 
 // Circle structure that holds values for the origin point and radius.
 typedef struct Circle {
-    Vector2 origin;
+    MyVector2 origin;
     double radius;
 } Circle;
-
-
 
 // ---------- MATH FUNCTIONS ---------- //
 
@@ -84,20 +78,21 @@ double sqpow(double val)
 // Returns 1 if val is positive or null, -1 if it is negative.
 int signOf(double val)
 {
-    if (val == 0) return 1;
-    return val / abs(val);
+    if (val == 0)
+        return 1;
+    return val / abs((int)val);
 }
 
 // Converts degrees to radians.
 double degToRad(double deg)
 {
-    return deg * (PI/180.0f);
+    return deg * (PI / 180.0f);
 }
 
 // Converts radians to degrees.
 double radToDeg(double rad)
 {
-    return rad * (180.0f/PI);
+    return rad * (180.0f / PI);
 }
 
 // Clamps a value between two values.
@@ -105,10 +100,12 @@ double clamp(double val, double min, double max)
 {
     assert(min <= max);
 
-    if (val < min) {
+    if (val < min)
+    {
         val = min;
     }
-    if (val > max) {
+    if (val > max)
+    {
         val = max;
     }
 
@@ -118,7 +115,8 @@ double clamp(double val, double min, double max)
 // Clamps a value to be under a value.
 double clampUnder(double val, double max)
 {
-    if (val > max) {
+    if (val > max)
+    {
         val = max;
     }
 
@@ -128,7 +126,8 @@ double clampUnder(double val, double max)
 // Clamps a value to be above a value.
 double clampAbove(double val, double min)
 {
-    if (val < min) {
+    if (val < min)
+    {
         val = min;
     }
 
@@ -143,102 +142,106 @@ double normalize(double val, double start, double end);
 // Remap value from a range to another range.
 double remap(double val, double inputStart, double inputEnd, double outputStart, double outputEnd);
 
-
-
 // ---------- VECTOR MATH FUNCTIONS ---------- //
 
-// Returns a vector of values { 0, 0 }.
-Vector2 Vector2Zero()
+// Returns a vector of the given values.
+MyVector2 Vector2Create(double x, double y)
 {
-    return (Vector2){ 0, 0 };
+    return (MyVector2){x, y};
+}
+
+// Returns a vector of values { 0, 0 }.
+MyVector2 Vector2Zero()
+{
+    return (MyVector2){0, 0};
 }
 
 // Adds two vectors together.
-Vector2 Vector2Add(Vector2 v1, Vector2 v2)
+MyVector2 Vector2Add(MyVector2 v1, MyVector2 v2)
 {
-    return (Vector2){ v1.x + v2.x, v1.y + v2.y };
+    return (MyVector2){v1.x + v2.x, v1.y + v2.y};
 }
 
 // Adds a value to a vector.
-Vector2 Vector2AddVal(Vector2 v, double val)
+MyVector2 Vector2AddVal(MyVector2 v, double val)
 {
-    return (Vector2){ v.x + val, v.y + val };
+    return (MyVector2){v.x + val, v.y + val};
 }
 
 // Substract two vectors together.
-Vector2 Vector2Substract(Vector2 v1, Vector2 v2)
+MyVector2 Vector2Substract(MyVector2 v1, MyVector2 v2)
 {
-    return (Vector2){ v1.x - v2.x, v1.y - v2.y };
+    return (MyVector2){v1.x - v2.x, v1.y - v2.y};
 }
 
 // Multiplies two vectors together.
-Vector2 Vector2Multiply(Vector2 v1, Vector2 v2)
+MyVector2 Vector2Multiply(MyVector2 v1, MyVector2 v2)
 {
-    return (Vector2){ v1.x * v2.x, v1.y * v2.y };
+    return (MyVector2){v1.x * v2.x, v1.y * v2.y};
 }
 
 // Multiplies a vector by a value.
-Vector2 Vector2MultiplyVal(Vector2 v, double val)
+MyVector2 Vector2MultiplyVal(MyVector2 v, double val)
 {
-    return (Vector2){ v.x * val, v.y * val };
+    return (MyVector2){v.x * val, v.y * val};
 }
 
 // Divides a vector by another.
-Vector2 Vector2Divide(Vector2 v1, Vector2 v2)
+MyVector2 Vector2Divide(MyVector2 v1, MyVector2 v2)
 {
-    return (Vector2){ v1.x / v2.x, v1.y / v2.y };
+    return (MyVector2){v1.x / v2.x, v1.y / v2.y};
 }
 
 // Returns the length of the given vector.
-double Vector2Length(Vector2 v)
+double Vector2Length(MyVector2 v)
 {
     return sqrt(sqpow(v.x) + sqpow(v.y));
 }
 
 // Normalizes the given vector.
-Vector2 Vector2Normalize(Vector2 v)
+MyVector2 Vector2Normalize(MyVector2 v)
 {
-    return (Vector2){ v.x / Vector2Length(v), v.y / Vector2Length(v) };
+    return (MyVector2){v.x / Vector2Length(v), v.y / Vector2Length(v)};
 }
 
 // Creates a vector given a rotation and a length.
-Vector2 Vector2FromAngle(double rad, double length)
+MyVector2 Vector2FromAngle(double rad, double length)
 {
-    return (Vector2){ cos(rad) * length, sin(rad) * length };
+    return (MyVector2){cos(rad) * length, sin(rad) * length};
 }
 
 // Returns the angle of the given vector.
-double Vector2GetAngle(Vector2 v)
+double Vector2GetAngle(MyVector2 v)
 {
     return acos(Vector2Normalize(v).x);
 }
 
 // Resizes the given vector to the given length.
-Vector2 Vector2SetLength(Vector2 v, double length)
+MyVector2 Vector2SetLength(MyVector2 v, double length)
 {
     return Vector2FromAngle(Vector2GetAngle(v), length);
 }
 
 // Negates the values of the given vector.
-Vector2 Vector2Negate(Vector2 v)
+MyVector2 Vector2Negate(MyVector2 v)
 {
-    return (Vector2){ -v.x, -v.y };
+    return (MyVector2){-v.x, -v.y};
 }
 
 // Returns the dot product of two vectors.
-double Vector2DotProduct(Vector2 v1, Vector2 v2)
+double Vector2DotProduct(MyVector2 v1, MyVector2 v2)
 {
     return (v1.x * v2.x) + (v1.y * v2.y);
 }
 
 // Returns the cross product of two vectors.
-double Vector2CrossProduct(Vector2 v1, Vector2 v2)
+double Vector2CrossProduct(MyVector2 v1, MyVector2 v2)
 {
     return (v1.x * v2.y) - (v1.y * v2.x);
 }
 
 // Returns the angle between two vectors.
-double Vector2Angle(Vector2 v1, Vector2 v2)
+double Vector2Angle(MyVector2 v1, MyVector2 v2)
 {
     double v1_angle = Vector2GetAngle(v1);
     double v2_angle = Vector2GetAngle(v2);
@@ -246,7 +249,7 @@ double Vector2Angle(Vector2 v1, Vector2 v2)
 }
 
 // Rotates the given vector by the given angle (in radians).
-Vector2 Vector2Rotate(Vector2 v, double angle)
+MyVector2 Vector2Rotate(MyVector2 v, double angle)
 {
     double v_length = Vector2Length(v);
     double v_angle = Vector2GetAngle(v);
