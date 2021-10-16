@@ -10,44 +10,62 @@
 // ---------- DEFINITIONS --------- //
 
 #define PI 3.14159265358979323846f
-#define TO_RAY_V2(v) (*(*Vector2) & v)
-#define TO_RAY_REC(r) (*(*Rectangle) & r)
 
 // ---------- STRUCTURES ---------- //
 
 // Vector structure that holds values for x and y.
-typedef struct MyVector2 {
+typedef struct MyVector2
+{
     double x, y;
 } MyVector2;
 
 // Sgment structure that holds values for the starting point and the end point.
-typedef struct Segment {
+typedef struct Segment
+{
     MyVector2 a, b;
 } Segment;
 
 // Triangle structure that holds values for 3 points.
-typedef struct Triangle {
+typedef struct Triangle
+{
     MyVector2 a, b, c;
 } Triangle;
 
 // Rectangle structure that holds values for the origin point, width and height.
-typedef struct MyRectangle {
+typedef struct MyRectangle
+{
     MyVector2 origin;
     double width, height;
 } MyRectangle;
 
 // Polygon structure that holds values for the origin point, the radius and the number of sides.
-typedef struct Polygon {
+typedef struct Polygon
+{
     MyVector2 origin;
     double radius;
     int sides;
 } Polygon;
 
 // Circle structure that holds values for the origin point and radius.
-typedef struct Circle {
+typedef struct Circle
+{
     MyVector2 origin;
     double radius;
 } Circle;
+
+// ---------- CONVERSIONS --------- //
+
+// Converts a my_math vector to a raylib vector.
+Vector2 toRayVec(MyVector2 v)
+{
+    return (Vector2){v.x, v.y};
+}
+
+// Converts a my_math rectangle to a raylib rectangle.
+Rectangle toRayRec(MyRectangle r)
+{
+    return (Rectangle){r.origin.x, r.origin.y, r.width, r.height};
+}
 
 // ---------- MATH FUNCTIONS ---------- //
 
