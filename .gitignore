@@ -3,4 +3,4 @@
 *.d
 .vscode
 test_math
-push.sh
+push*
