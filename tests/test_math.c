@@ -1,48 +1,94 @@
 #include <my_math.h>
 #include <stdio.h>
 
-int main()
+int main(void)
 {
-    printf("\n----- TESTING MATH UTILITY FUNCTIONS -----\n");
-    printf("sqpow(2)           = %d\n", (int)sqpow(2));
-    printf("degToRad(180)      = %f\n", degToRad(180));
-    printf("radToDeg(PI)       = %d\n", roundInt(radToDeg(PI)));
-    printf("clamp(11, 0, 10)   = %d\n", (int)clamp(11, 0, 10));
-    printf("clamp(-1, 0, 10)   = %d\n", (int)clamp(-1, 0, 10));
-    printf("clampUnder(11, 10) = %d\n", (int)clampUnder(11, 10));
-    printf("clampAbove(-1, 0)  = %d\n", (int)clampAbove(-1, 0));
+    // ---------- INITIALIZATION ---------- //
 
-    printf("\n----- TESTING Vector2 MATH FUNCTIONS -----\n");
-    printf("Vector2Zero                        = { %d, %d }\n", (int)Vector2Zero().x, (int)Vector2Zero().y);
-    Vector2 vec_from_rot = Vector2FromAngle(PI, 2);
-    printf("Vector2FromAngle   (pi, 1)          = { %d, %d }\n", roundInt(vec_from_rot.x), roundInt(vec_from_rot.y));
-    printf("Vector2GetAngle    (vec_from_rot)   = %f\n", Vector2GetAngle(vec_from_rot));
-    Vector2 vec_add = Vector2Add((Vector2){1, 2}, (Vector2){3, 4});
-    printf("Vector2Add         ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_add.x, (int)vec_add.y);
-    Vector2 vec_add_val = Vector2AddVal((Vector2){1, 2}, 3);
-    printf("Vector2AddVal      ({1, 2}, 3)      = { %d, %d }\n", (int)vec_add_val.x, (int)vec_add_val.y);
-    Vector2 vec_sub = Vector2Substract((Vector2){1, 2}, (Vector2){3, 4});
-    printf("Vector2Substract   ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_sub.x, (int)vec_sub.y);
-    Vector2 vec_mult = Vector2Multiply((Vector2){1, 2}, (Vector2){3, 4});
-    printf("Vector2Multiply    ({1, 2}, {3, 4}) = { %d, %d }\n", (int)vec_mult.x, (int)vec_mult.y);
-    Vector2 vec_mult_val = Vector2MultiplyVal((Vector2){1, 2}, 3);
-    printf("Vector2MultiplyVal ({1, 2}, 3)      = { %d, %d }\n", (int)vec_mult_val.x, (int)vec_mult_val.y);
-    Vector2 vec_div = Vector2Divide((Vector2){1, 2}, (Vector2){3, 4});
-    printf("Vector2Divide      ({1, 2}, {3, 4}) = { %f, %f }\n", vec_div.x, vec_div.y);
-    printf("Vector2Length      ({1, 1})         = %f\n", Vector2Length((Vector2){1, 1}));
-    Vector2 vec_set_len = Vector2SetLength((Vector2){2, 0}, 1);
-    printf("Vector2SetLength   ({2, 0}, 1)      = { %d, %d }\n", roundInt(vec_set_len.x), roundInt(vec_set_len.y));
-    Vector2 vec_neg = Vector2Negate((Vector2){1, -2});
-    printf("Vector2Negate      ({1, -2})        = { %d, %d }\n", (int)vec_neg.x, (int)vec_neg.y);
-    Vector2 vec_norm = Vector2Normalize((Vector2){1, 2});
-    printf("Vector2Normalize   ({1, 2})         = { %f, %f } of length = %d\n", vec_norm.x, vec_norm.y, roundInt(Vector2Length(vec_norm)));
-    printf("Vector2DotProduct  ({0, 1}, {1, 0}) = %d\n", roundInt(Vector2DotProduct((Vector2){0, 1}, (Vector2){1, 0})));
-    printf("Vector2CrossProduct({0, 1}, {0, 1}) = %d\n", roundInt(Vector2CrossProduct((Vector2){0, 1}, (Vector2){0, 1})));
-    printf("Vector2Angle       ({0, 1}, {1, 0}) = %d\n", roundInt(radToDeg(Vector2Angle((Vector2){0, 1}, (Vector2){1, 0}))));
-    Vector2 vec_rotate = Vector2Rotate((Vector2){0, 1}, PI/2);
-    printf("Vector2Rotate      ({0, 1}, pi/2)   = { %d, %d }\n", roundInt(vec_rotate.x), roundInt(vec_rotate.y));
+    // Define the screen size.
+    const int screenWidth = 830;
+    const int screenHeight = 1060;
 
-    printf("\n");
+    // Initialize the game window.
+    InitWindow(screenWidth, screenHeight, "My Math Lib Test");
+    SetTargetFPS(60);
+
+    int current_shape = 0;
+    int x[2] = { GetScreenWidth() / 2, GetScreenWidth() / 2 };
+    int y[2] = { GetScreenHeight() / 2, GetScreenHeight() / 2 };
+    int sizes[2] = { 200, 50 };
+    double rotations[2] = { 0, 0 };
+    int sides[2] = { 5, 3 };
+
+    ShapeInfo shapes[2];
+    shapes[0].type = POLYGON;
+    shapes[1].type = POLYGON;
+    MyRectangle bounding_boxes[2];
+
+    // ---------- GAME LOOP ---------- //
+    while (!WindowShouldClose())
+    {
+        // ------- UPDATE ------- //
+        //! KEYBINDS AXIS AND PROJECTIONS DISPLAY
+        if (IsKeyPressed(KEY_SPACE))
+            current_shape = !current_shape;
+        if (IsKeyDown(KEY_W))
+            y[current_shape] -= 2;
+        if (IsKeyDown(KEY_S))
+            y[current_shape] += 2;
+        if (IsKeyDown(KEY_D))
+            x[current_shape] += 2;
+        if (IsKeyDown(KEY_A))
+            x[current_shape] -= 2;
+        if (IsKeyPressed(KEY_KP_ADD) && sides[current_shape] <= 360)
+            sides[current_shape]++;
+        if (IsKeyPressed(KEY_KP_SUBTRACT) && sides[current_shape] > 3)
+            sides[current_shape]--;
+        if (IsKeyDown(KEY_KP_MULTIPLY) && sizes[current_shape] <= 1000)
+            sizes[current_shape] += 5;
+        if (IsKeyDown(KEY_KP_DIVIDE) && sizes[current_shape] > 10)
+            sizes[current_shape] -= 5;
+        if (IsKeyDown(KEY_KP_0))
+            rotations[current_shape] += PI / sizes[current_shape];
+        if (IsKeyDown(KEY_KP_DECIMAL))
+            rotations[current_shape] -= PI / sizes[current_shape];
+        if (IsKeyPressed(KEY_KP_9))
+            sides[current_shape] = 360;
+        if (IsKeyPressed(KEY_KP_8) || IsKeyPressed(KEY_KP_7))
+            sides[current_shape] = 3;
+
+        // ------- DISPLAY ------- //
+        BeginDrawing();
+        {
+            ClearBackground(BLACK);
+
+            //! ------ SANDBOX COLLISIONS ------ //
+
+            for (int i = 0; i < 2; i++)
+            {
+                shapes[i].data.polygon = PolygonCreate(Vector2Create(x[i], y[i]), sizes[i], rotations[i], sides[i]);
+                bounding_boxes[i] = getBoundingBox(shapes[i]);
+            }
+
+            //! Test collisions using SAT.
+            bool AABB_result = collisionAABB(bounding_boxes[0], bounding_boxes[1]);
+            bool SAT_result = collisionSAT(shapes[0], shapes[1]);
+
+            // Show the bounding boxes and the shapes.
+            for (int i = 0; i < 2; i++) 
+            {
+                DrawMyRectangle(bounding_boxes[i], (AABB_result ? RED : GREEN));
+                DrawShape(shapes[i], Vector2Zero(), (SAT_result ? RED : GREEN));
+            }
+
+            //! Text indications.
+            DrawText(TextFormat("%d", GetFPS()), GetScreenWidth() - 50, 25, 15, WHITE);
+        }
+        EndDrawing();
+    }
+
+    // ---------- DE-INITIALIZATION ---------- //
+    CloseWindow();
 
     return 0;
 }

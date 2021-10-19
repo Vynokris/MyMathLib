@@ -1,7 +1,7 @@
-CFLAGS=-O0 -g -Wall -Iinclude -lm
-CPPFLAGS=-MMD
-LDFLAGS=
-LDLIBS=
+CFLAGS=-O0 -g -Wall -Wextra -Wno-unused-parameter
+CPPFLAGS=-MMD -Iexternals/include
+LDLIBS=-lraylib -lm -ldl -lpthread
+LDFLAGS=-Lexternals/libs
 
 OBJS=tests/test_math.o
 DEPS=$(OBJS:.o=.d)
