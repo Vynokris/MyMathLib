@@ -11,7 +11,7 @@
 // ---------- DEFINES ---------- //
 
 #define DEBUG_SHOW_SHAPES
-// #define DEBUG_SHOW_PROJECTIONS
+#define DEBUG_SHOW_PROJECTIONS
 #define DEBUG_SHOW_FAILED_PROJECTIONS
 #define DEBUG_SHOW_AXES
 #define DEBUG_SHOW_BOUNDING_BOXES
@@ -778,12 +778,12 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
 }
 
 // Returns true if the given point is colliding with the given segment.
-static inline bool collisionSegmentPoint(Segment s, MyVector2 p)
+static inline bool collisionSegmentPoint(Segment segment, MyVector2 point)
 {
-    if (roundInt(Vector2CrossProduct(Vector2FromSegment(s), Vector2FromPoints(s.a, p))) == 0)
+    if (roundInt(Vector2CrossProduct(Vector2FromSegment(segment), Vector2FromPoints(segment.a, point))) == 0)
     {
-        if ((p.x >= s.a.x && p.x <= s.b.x) ||
-            (p.x <= s.a.x && p.x >= s.b.x))
+        if ((point.x >= segment.a.x && point.x <= segment.b.x) || (point.y >= segment.a.y && point.y <= segment.b.y) ||
+            (point.x <= segment.a.x && point.x >= segment.b.x) || (point.y <= segment.a.y && point.y >= segment.b.y))
         {
             return true;
         }
