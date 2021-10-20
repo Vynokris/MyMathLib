@@ -23,15 +23,33 @@ int main(void)
     ShapeInfo shapes[2];
     shapes[0].type = POLYGON;
     shapes[1].type = POLYGON;
-    MyRectangle bounding_boxes[2];
+
+    ShapeInfo circle;
+    circle.type = CIRCLE;
+    circle.data.circle = CircleCreate(Vector2Create(200, 200), 90);
+
+    ShapeInfo triangle;
+    triangle.type = TRIANGLE;
+    triangle.data.triangle = TriangleCreate(Vector2Create(GetScreenWidth() - 100, GetScreenHeight() - 100), Vector2Create(GetScreenWidth() - 300, GetScreenHeight() - 100), Vector2Create(GetScreenWidth() - 200, GetScreenHeight() - 250));
+
+    ShapeInfo rectangle;
+    rectangle.type = RECTANGLE;
+    rectangle.data.rectangle = RectangleCreate(Vector2Create(GetScreenWidth() - 300, 150), 200, 100);
+
+    ShapeInfo segment;
+    segment.type = SEGMENT;
+    segment.data.segment = SegmentCreate(Vector2Create(100, GetScreenHeight() - 200), Vector2Create(300, GetScreenHeight() - 100));
 
     // ---------- GAME LOOP ---------- //
     while (!WindowShouldClose())
     {
         // ------- UPDATE ------- //
-        //! KEYBINDS AXIS AND PROJECTIONS DISPLAY
+
+        // Switch shape.
         if (IsKeyPressed(KEY_SPACE))
             current_shape = !current_shape;
+
+        // Move shape.
         if (IsKeyDown(KEY_W))
             y[current_shape] -= 2;
         if (IsKeyDown(KEY_S))
@@ -40,21 +58,29 @@ int main(void)
             x[current_shape] += 2;
         if (IsKeyDown(KEY_A))
             x[current_shape] -= 2;
-        if (IsKeyPressed(KEY_KP_ADD) && sides[current_shape] <= 360)
+            
+        // Change side number.
+        if (IsKeyPressed(KEY_KP_DECIMAL) && sides[current_shape] < 360)
             sides[current_shape]++;
-        if (IsKeyPressed(KEY_KP_SUBTRACT) && sides[current_shape] > 3)
+        if (IsKeyPressed(KEY_KP_0) && sides[current_shape] > 3)
             sides[current_shape]--;
-        if (IsKeyDown(KEY_KP_MULTIPLY) && sizes[current_shape] <= 1000)
+
+        // Change size.
+        if (IsKeyDown(KEY_KP_6) && sizes[current_shape] <= 1000)
             sizes[current_shape] += 5;
-        if (IsKeyDown(KEY_KP_DIVIDE) && sizes[current_shape] > 10)
+        if (IsKeyDown(KEY_KP_5) && sizes[current_shape] > 10)
             sizes[current_shape] -= 5;
-        if (IsKeyDown(KEY_KP_0))
+
+        // Rotate.
+        if (IsKeyDown(KEY_KP_3))
             rotations[current_shape] += PI / sizes[current_shape];
-        if (IsKeyDown(KEY_KP_DECIMAL))
+        if (IsKeyDown(KEY_KP_2))
             rotations[current_shape] -= PI / sizes[current_shape];
+
+        // Circle button.
         if (IsKeyPressed(KEY_KP_9))
             sides[current_shape] = 360;
-        if (IsKeyPressed(KEY_KP_8) || IsKeyPressed(KEY_KP_7))
+        if (IsKeyPressed(KEY_KP_8))
             sides[current_shape] = 3;
 
         // ------- DISPLAY ------- //
@@ -62,26 +88,40 @@ int main(void)
         {
             ClearBackground(BLACK);
 
-            //! ------ SANDBOX COLLISIONS ------ //
+            // Sandbox collisions.
 
+            // Update the two dynamic polygons.
             for (int i = 0; i < 2; i++)
             {
                 shapes[i].data.polygon = PolygonCreate(Vector2Create(x[i], y[i]), sizes[i], rotations[i], sides[i]);
-                bounding_boxes[i] = getBoundingBox(shapes[i]);
             }
 
-            //! Test collisions using SAT.
-            bool AABB_result = collisionAABB(bounding_boxes[0], bounding_boxes[1]);
-            bool SAT_result = collisionSAT(shapes[0], shapes[1]);
+            // Test collisions using SAT.
+            bool dynamic_shapes = collisionSAT(shapes[0], shapes[1]);
+            bool circle_shape[2] = { collisionSAT(circle, shapes[0]), collisionSAT(circle, shapes[1]) };
+            bool triangle_shape[2] = { collisionSAT(triangle, shapes[0]), collisionSAT(triangle, shapes[1]) };
+            bool rectangle_shape[2] = { collisionSAT(rectangle, shapes[0]), collisionSAT(rectangle, shapes[1]) };
+            bool segment_shape[2] = { collisionSAT(segment, shapes[0]), collisionSAT(segment, shapes[1]) };
 
-            // Show the bounding boxes and the shapes.
+            // Show the colliding shapes.
+            #ifdef DEBUG_SHOW_SHAPES
+
             for (int i = 0; i < 2; i++) 
-            {
-                DrawMyRectangle(bounding_boxes[i], (AABB_result ? RED : GREEN));
-                DrawShape(shapes[i], Vector2Zero(), (SAT_result ? RED : GREEN));
-            }
+                if (dynamic_shapes || circle_shape[i] || triangle_shape[i] || rectangle_shape[i] || segment_shape[i])
+                    DrawShape(shapes[i], Vector2Zero(), RED);
 
-            //! Text indications.
+            if (circle_shape[0] || circle_shape[1])
+                DrawShape(circle, Vector2Zero(), RED);
+            if (triangle_shape[0] || triangle_shape[1])
+                DrawShape(triangle, Vector2Zero(), RED);
+            if (rectangle_shape[0] || rectangle_shape[1])
+                DrawShape(rectangle, Vector2Zero(), RED);
+            if (segment_shape[0] || segment_shape[1])
+                DrawShape(segment, Vector2Zero(), RED);
+
+            #endif
+
+            // FPS.
             DrawText(TextFormat("%d", GetFPS()), GetScreenWidth() - 50, 25, 15, WHITE);
         }
         EndDrawing();

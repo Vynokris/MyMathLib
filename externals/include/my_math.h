@@ -8,6 +8,15 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// ---------- DEFINES ---------- //
+
+#define DEBUG_SHOW_SHAPES
+// #define DEBUG_SHOW_PROJECTIONS
+#define DEBUG_SHOW_FAILED_PROJECTIONS
+#define DEBUG_SHOW_AXES
+#define DEBUG_SHOW_BOUNDING_BOXES
+
+
 // ---------- STRUCTURES ---------- //
 
 // Vector structure that holds values for x and y.
@@ -185,71 +194,6 @@ static inline double remap(double val, double inputStart, double inputEnd, doubl
     // Source: https://stackoverflow.com/a/3451607/13858872
     // Find how far you are into the first range, scale that distance by the ratio of sizes of the ranges, and that's how far you should be into the second range.
     return outputStart + (val - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
-}
-
-// ---------- DRAWING FUNCTIONS ---------- //
-
-static inline void DrawPoint(MyVector2 p, Color color)
-{
-    DrawCircle(p.x, p.y, 2, color);
-}
-
-static inline void DrawVector2(MyVector2 v, MyVector2 origin, Color color)
-{
-    DrawLine(origin.x, origin.y, origin.x + v.x, origin.y + v.y, color);
-    DrawCircle(origin.x + v.x, origin.y + v.y, 2, color);
-}
-
-static inline void DrawSegment(Segment s, Color color)
-{
-    DrawLine(s.a.x, s.a.y, s.b.x, s.b.y, color);
-}
-
-static inline void DrawMyTriangle(Triangle t, Color color)
-{
-    DrawTriangleLines(toRayVec(t.a), toRayVec(t.b), toRayVec(t.c), color);
-}
-
-static inline void DrawMyRectangle(MyRectangle r, Color color)
-{
-    DrawRectangleLines(r.origin.x, r.origin.y, r.width, r.height, color);
-}
-
-static inline void DrawMyPolygon(Polygon poly, Color color)
-{
-    DrawPolyLines(toRayVec(poly.origin), poly.sides, poly.radius, radToDeg(poly.rotation), color);
-}
-
-static inline void DrawMyCircle(Circle c, Color color)
-{
-    DrawCircleLines(c.origin.x, c.origin.y, c.radius, color);
-}
-
-static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
-{
-    switch (shape.type)
-    {
-    case VECTOR2:
-        DrawVector2(shape.data.vector, origin, color);
-        break;
-    case SEGMENT:
-        DrawSegment(shape.data.segment, color);
-        break;
-    case TRIANGLE:
-        DrawMyTriangle(shape.data.triangle, color);
-        break;
-    case RECTANGLE:
-        DrawMyRectangle(shape.data.rectangle, color);
-        break;
-    case POLYGON:
-        DrawMyPolygon(shape.data.polygon, color);
-        break;
-    case CIRCLE:
-        DrawMyCircle(shape.data.circle, color);
-        break;
-    default:
-        break;
-    }
 }
 
 // ---------- OBJECT CREATION ---------- //
@@ -477,6 +421,73 @@ static inline MyVector2 getTriangleGravityCenter(Triangle t)
     return Vector2Create((t.a.x + t.b.x + t.c.x) / 3, (t.a.y + t.b.y + t.c.y) / 3);
 }
 
+// ---------- DRAWING FUNCTIONS ---------- //
+
+static inline void DrawPoint(MyVector2 p, Color color)
+{
+    DrawCircle(p.x, p.y, 2, color);
+}
+
+static inline void DrawVector2(MyVector2 v, MyVector2 origin, Color color)
+{
+    DrawLine(origin.x, origin.y, origin.x + v.x, origin.y + v.y, color);
+    DrawPoly(toRayVec(Vector2Add(origin, v)), 3, 4, radToDeg(Vector2GetAngle(v) - PI/2), color);
+}
+
+static inline void DrawSegment(Segment s, Color color)
+{
+    DrawLine(s.a.x, s.a.y, s.b.x, s.b.y, color);
+    DrawCircle(s.a.x, s.a.y, 2, color);
+    DrawCircle(s.b.x, s.b.y, 2, color);
+}
+
+static inline void DrawMyTriangle(Triangle t, Color color)
+{
+    DrawTriangleLines(toRayVec(t.a), toRayVec(t.b), toRayVec(t.c), color);
+}
+
+static inline void DrawMyRectangle(MyRectangle r, Color color)
+{
+    DrawRectangleLines(r.origin.x, r.origin.y, r.width, r.height, color);
+}
+
+static inline void DrawMyPolygon(Polygon poly, Color color)
+{
+    DrawPolyLines(toRayVec(poly.origin), poly.sides, poly.radius, radToDeg(poly.rotation), color);
+}
+
+static inline void DrawMyCircle(Circle c, Color color)
+{
+    DrawCircleLines(c.origin.x, c.origin.y, c.radius, color);
+}
+
+static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
+{
+    switch (shape.type)
+    {
+    case VECTOR2:
+        DrawVector2(shape.data.vector, origin, color);
+        break;
+    case SEGMENT:
+        DrawSegment(shape.data.segment, color);
+        break;
+    case TRIANGLE:
+        DrawMyTriangle(shape.data.triangle, color);
+        break;
+    case RECTANGLE:
+        DrawMyRectangle(shape.data.rectangle, color);
+        break;
+    case POLYGON:
+        DrawMyPolygon(shape.data.polygon, color);
+        break;
+    case CIRCLE:
+        DrawMyCircle(shape.data.circle, color);
+        break;
+    default:
+        break;
+    }
+}
+
 // ---------- COLLISIONS ---------- //
 
 // Returns the number of sides of a given shape (returns 2 for rectangles).
@@ -602,6 +613,17 @@ static inline MyVector2 *getVertices(ShapeInfo shape)
 // Returns the smallest rectangle that contanins the given shape.
 static inline MyRectangle getBoundingBox(ShapeInfo shape)
 {
+    // If the shape is a circle.
+    if (shape.type == CIRCLE)
+    {
+        //! Debug render.
+        #ifdef DEBUG_SHOW_BOUNDING_BOXES
+        DrawMyRectangle(RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2), GRAY);
+        #endif
+
+        return RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2);
+    }
+
     // Get the shape's vertices information.
     int vertices_num = getVerticesNum(shape);
     MyVector2 *vertices = getVertices(shape);
@@ -627,19 +649,12 @@ static inline MyRectangle getBoundingBox(ShapeInfo shape)
 
     free(vertices);
 
-    return RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
-}
+    //! Debug render.
+    #ifdef DEBUG_SHOW_BOUNDING_BOXES
+    DrawMyRectangle(RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin), GRAY);
+    #endif
 
-// Checks for collision between two rectangles.
-static inline bool collisionAABB(MyRectangle rec1, MyRectangle rec2)
-{
-    if (rec1.origin.x + rec1.width >= rec2.origin.x &&
-        rec1.origin.x <= rec2.origin.x + rec2.width &&
-        rec1.origin.y + rec1.height >= rec2.origin.y &&
-        rec1.origin.y <= rec2.origin.y + rec2.height)
-        return true;
-    else
-        return false;
+    return RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
 }
 
 // Get all the axes of a given shape.
@@ -653,20 +668,75 @@ static inline Segment *getAxes(ShapeInfo shape)
     {
         axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(axes[i].a, axes[i].b), 2),
                                      Vector2Normal(Vector2Normalize(Vector2FromSegment(axes[i]))));
+        
+        
+        //! Debug render.
+        #ifdef DEBUG_SHOW_AXES
+        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axes[i]), 100), axes[i].a, BLUE);
+        #endif
     }
 
     return axes;
 }
 
+// Returns true if the given point is colliding with the given circle.
+static inline bool collisionCirclePoint(Circle c, MyVector2 p)
+{
+    return (distancePoints(c.origin, p) <= c.radius ? true : false);
+}
+
+// Returns true if the given circles are in collision.
+static inline bool collisionCircles(Circle c1, Circle c2)
+{
+    return (distancePoints(c1.origin, c2.origin) <= c1.radius + c2.radius ? true : false);
+}
+
+// Checks for collision between two rectangles.
+static inline bool collisionAABB(MyRectangle rec1, MyRectangle rec2)
+{
+    if (rec1.origin.x + rec1.width >= rec2.origin.x &&
+        rec1.origin.x <= rec2.origin.x + rec2.width &&
+        rec1.origin.y + rec1.height >= rec2.origin.y &&
+        rec1.origin.y <= rec2.origin.y + rec2.height) 
+    {
+        return true;
+    }
+
+    else
+    {
+        return false;
+    }
+}
+
 // Project a shape onto a given axis.
 static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
 {
+    // Get the axis' vector.
+    MyVector2 axis_vec = Vector2FromSegment(axis);
+
+    // Handle circles.
+    if (shape.type == CIRCLE)
+    {
+        // Project the circle's origin onto the axis.
+        MyVector2 origin_projection = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, shape.data.circle.origin), axis_vec)));
+
+        // Create a segment of the circle's projection.
+        Segment circle_projection = SegmentCreate(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)),
+                                                  Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
+
+        //! Debug render.
+        #ifdef DEBUG_SHOW_PROJECTIONS
+        DrawSegment(circle_projection, ORANGE);
+        #endif
+        
+        return circle_projection;
+    }
+
     //* https://fr.wikipedia.org/wiki/Projection_orthogonale#Projet%C3%A9_orthogonal_sur_une_droite,_distance
 
     // Get all the vertices of the shape.
-    MyVector2 *vertices = getVertices(shape);
     int vertices_num = getVerticesNum(shape);
-    MyVector2 axis_vec = Vector2FromSegment(axis);
+    MyVector2 *vertices = getVertices(shape);
 
     MyVector2 projected_points[vertices_num];
 
@@ -698,8 +768,13 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
 
     MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
 
+    //! Debug render.
+    #ifdef DEBUG_SHOW_PROJECTIONS
+    DrawSegment(SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), Vector2FromPoints(min_point, max_point)), ORANGE);
+    #endif
+
     return SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point),
-                              Vector2FromPoints(min_point, max_point));
+                            Vector2FromPoints(min_point, max_point));
 }
 
 // Returns true if the given point is colliding with the given segment.
@@ -732,9 +807,18 @@ static inline bool collisionProjections(Segment projection1, Segment projection2
 // Checks for collision between two given shapes.
 static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
 {
+    // If both the shapes are, circles, don't use SAT.
+    if (shape1.type == CIRCLE && shape2.type == CIRCLE)
+        collisionCircles(shape1.data.circle, shape2.data.circle);
+
     // Check for collisions on the shapes' bounding boxes to not have to check if they are not in collision.
     if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
     {
+        //! Debug render.
+        #ifdef DEBUG_SHOW_SHAPES
+        DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
+        #endif
+
         // Get the number of sides of both shapes.
         int sides1 = getSidesNum(shape1);
         int sides2 = getSidesNum(shape2);
@@ -753,6 +837,11 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
             // If the projections don't overlap, the shapes are not in collision.
             if (!collisionProjections(projection1, projection2))
             {
+                //! Debug render.
+                #ifdef DEBUG_SHOW_FAILED_PROJECTIONS
+                DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
+                #endif
+
                 free(axes1);
                 free(axes2);
                 return false;
@@ -767,28 +856,30 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
             // If the projections don't overlap, the shapes are not in collision.
             if (!collisionProjections(projection1, projection2))
             {
-                free(axes1);
-                free(axes2);
+                //! Debug render.
+                #ifdef DEBUG_SHOW_FAILED_PROJECTIONS
+                DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
+                #endif
+
+                if (sides1 > 0)
+                    free(axes1);
+                if (sides2 > 0)
+                    free(axes2);
                 return false;
             }
         }
-        free(axes1);
-        free(axes2);
+        if (sides1 > 0)
+            free(axes1);
+        if (sides2 > 0)
+            free(axes2);
         return true;
     }
+    //! Debug render.
+    #ifdef DEBUG_SHOW_SHAPES
+    DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
+    #endif
+
     return false;
-}
-
-// Returns true if the given point is colliding with the given circle.
-static inline bool collisionCirclePoint(Circle c, MyVector2 p)
-{
-    return (distancePoints(c.origin, p) <= c.radius ? true : false);
-}
-
-// Returns true if the given circles are in collision.
-static inline bool collisionCircles(Circle c1, Circle c2)
-{
-    return (distancePoints(c1.origin, c2.origin) <= c1.radius + c2.radius ? true : false);
 }
 
 #endif
