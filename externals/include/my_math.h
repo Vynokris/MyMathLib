@@ -11,11 +11,11 @@
 
 // ---------- DEFINES ---------- //
 
-bool __debug_shapes = false;
-bool __debug_bounding_boxes = false;
-bool __debug_axes = false;
-bool __debug_projections = false;
-bool __debug_failed_projections = false;
+static bool __debug_shapes = false;
+static bool __debug_bounding_boxes = false;
+static bool __debug_axes = false;
+static bool __debug_projections = false;
+static bool __debug_failed_projections = false;
 
 
 // ---------- STRUCTURES ---------- //
@@ -809,8 +809,9 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
                                                   Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
 
         //! Debug render.
-        if (__debug_projections)
+        if (__debug_projections) {
             DrawSegment(circle_projection, ORANGE);
+        }
         
         return circle_projection;
     }
@@ -852,8 +853,9 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
     MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
 
     //! Debug render.
-    if (__debug_projections)
+    if (__debug_projections) {
         DrawSegment(SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), Vector2FromPoints(min_point, max_point)), ORANGE);
+    }
 
     return SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point),
                             Vector2FromPoints(min_point, max_point));
