@@ -2,51 +2,47 @@
 #ifndef MY_MATH_H
 #define MY_MATH_H
 
-#include <assert.h>
 #include "raylib.h"
 #include <math.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
 
 // ---------- DEFINES ---------- //
 
-#define DEBUG_SHOW_SHAPES
-#define DEBUG_SHOW_PROJECTIONS
-#define DEBUG_SHOW_FAILED_PROJECTIONS
-#define DEBUG_SHOW_AXES
-#define DEBUG_SHOW_BOUNDING_BOXES
+bool __debug_shapes = false;
+bool __debug_bounding_boxes = false;
+bool __debug_axes = false;
+bool __debug_projections = false;
+bool __debug_failed_projections = false;
 
 
 // ---------- STRUCTURES ---------- //
 
 // Vector structure that holds values for x and y.
-typedef struct MyVector2
-{
+typedef struct MyVector2 {
     double x, y;
 } MyVector2;
 
 // Sgment structure that holds values for the starting point and the end point.
-typedef struct Segment
-{
+typedef struct Segment {
     MyVector2 a, b;
 } Segment;
 
 // Triangle structure that holds values for 3 points.
-typedef struct Triangle
-{
+typedef struct Triangle {
     MyVector2 a, b, c;
 } Triangle;
 
 // Rectangle structure that holds values for the origin point, width and height.
-typedef struct MyRectangle
-{
+typedef struct MyRectangle {
     MyVector2 origin;
     double width, height;
 } MyRectangle;
 
 // Polygon structure that holds values for the origin point, the radius and the number of sides.
-typedef struct Polygon
-{
+typedef struct Polygon {
     MyVector2 origin;
     double radius;
     double rotation;
@@ -54,15 +50,13 @@ typedef struct Polygon
 } Polygon;
 
 // Circle structure that holds values for the origin point and radius.
-typedef struct Circle
-{
+typedef struct Circle {
     MyVector2 origin;
     double radius;
 } Circle;
 
 // Union that can contain any shape.
-typedef union Shape
-{
+typedef union Shape {
     MyVector2 vector;
     Segment segment;
     Triangle triangle;
@@ -72,8 +66,7 @@ typedef union Shape
 } Shape;
 
 // Shape types enum.
-typedef enum ShapeTypes
-{
+typedef enum ShapeTypes {
     VECTOR2,
     SEGMENT,
     TRIANGLE,
@@ -82,11 +75,11 @@ typedef enum ShapeTypes
     CIRCLE,
 } ShapeTypes;
 
-typedef struct ShapeInfo 
-{
+typedef struct ShapeInfo {
     ShapeTypes type;
     Shape data;
 } ShapeInfo;
+
 
 // ---------- CONVERSIONS --------- //
 
@@ -102,6 +95,7 @@ static inline Rectangle toRayRec(MyRectangle r)
 {
     return (Rectangle){r.origin.x, r.origin.y, r.width, r.height};
 }
+
 
 // ---------- MATH FUNCTIONS ---------- //
 
@@ -195,6 +189,7 @@ static inline double remap(double val, double inputStart, double inputEnd, doubl
     // Find how far you are into the first range, scale that distance by the ratio of sizes of the ranges, and that's how far you should be into the second range.
     return outputStart + (val - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
 }
+
 
 // ---------- OBJECT CREATION ---------- //
 
@@ -391,7 +386,14 @@ static inline MyVector2 Vector2Rotate(MyVector2 v, double angle)
     return Vector2FromAngle(v_angle + angle, v_length);
 }
 
-// ---------- POLYGON MATH FUNCTIONS ---------- //
+
+// ---------- MISC. FUNCTIONS ----------- //
+
+// Returns the distance between two points.
+static inline double distancePoints(MyVector2 p1, MyVector2 p2)
+{
+    return Vector2Length(Vector2FromPoints(p1, p2));
+}
 
 // Returns the side of the given polygon that corresponds to the given index.
 static inline Segment PolygonGetSide(Polygon poly, int index)
@@ -407,33 +409,76 @@ static inline Segment PolygonGetSide(Polygon poly, int index)
     return SegmentCreate(poly_point_a, poly_point_b);
 }
 
-// ---------- MISC. FUNCTIONS ----------- //
 
-// Returns the distance between two points.
-static inline double distancePoints(MyVector2 p1, MyVector2 p2)
+// ---------- CENTER OF MASS ---------- //
+
+// Returns the center of mass of a given segment.
+static inline MyVector2 SegmentCenterOfMass(Segment segment)
 {
-    return Vector2Length(Vector2FromPoints(p1, p2));
+    return Vector2Create((segment.a.x + segment.b.x) / 2, (segment.a.y + segment.b.y) / 2);
 }
 
-// Returns the gravity center of a triangle
-static inline MyVector2 getTriangleGravityCenter(Triangle t)
+// Returns the center of mass of a given triangle.
+static inline MyVector2 TriangleCenterOfMass(Triangle triangle)
 {
-    return Vector2Create((t.a.x + t.b.x + t.c.x) / 3, (t.a.y + t.b.y + t.c.y) / 3);
+    return Vector2Create((triangle.a.x + triangle.b.x + triangle.c.x) / 3, (triangle.a.y + triangle.b.y + triangle.c.y) / 3);
 }
+
+// Returns the center of mass of a given rectangle.
+static inline MyVector2 RectangleCenterOfMass(MyRectangle rectangle)
+{
+    return Vector2Create(rectangle.origin.x + rectangle.width / 2, rectangle.origin.y + rectangle.height / 2);
+}
+
+// Returns the center of mass of a given polygon.
+static inline MyVector2 PolygonCenterOfMass(Polygon poly)
+{
+    return poly.origin;
+}
+
+// Returns the center of mass of a given circle.
+static inline MyVector2 CircleCenterOfMass(Circle circle)
+{
+    return circle.origin;
+}
+
+// Returns the center of mass of the given shape (returns a vector of coordinates 1,000,000 if the shape type isn't supported).
+static inline MyVector2 ShapeCenterOfMass(ShapeInfo shape)
+{
+    switch (shape.type)
+    {
+    case SEGMENT:
+        return SegmentCenterOfMass(shape.data.segment);
+    case TRIANGLE:
+        return TriangleCenterOfMass(shape.data.triangle);
+    case RECTANGLE:
+        return RectangleCenterOfMass(shape.data.rectangle);
+    case POLYGON:
+        return PolygonCenterOfMass(shape.data.polygon);
+    case CIRCLE:
+        return CircleCenterOfMass(shape.data.circle);
+    default:
+        return Vector2Create(1000000, 1000000);
+    }
+}
+
 
 // ---------- DRAWING FUNCTIONS ---------- //
 
+// Draws a point in a raylib window.
 static inline void DrawPoint(MyVector2 p, Color color)
 {
     DrawCircle(p.x, p.y, 2, color);
 }
 
+// Draws a vector at a certain origin point of a raylib window.
 static inline void DrawVector2(MyVector2 v, MyVector2 origin, Color color)
 {
     DrawLine(origin.x, origin.y, origin.x + v.x, origin.y + v.y, color);
     DrawPoly(toRayVec(Vector2Add(origin, v)), 3, 4, radToDeg(Vector2GetAngle(v) - PI/2), color);
 }
 
+// Draws a segment in a raylib window.
 static inline void DrawSegment(Segment s, Color color)
 {
     DrawLine(s.a.x, s.a.y, s.b.x, s.b.y, color);
@@ -441,26 +486,31 @@ static inline void DrawSegment(Segment s, Color color)
     DrawCircle(s.b.x, s.b.y, 2, color);
 }
 
+// Draws a triangle in a raylib window.
 static inline void DrawMyTriangle(Triangle t, Color color)
 {
     DrawTriangleLines(toRayVec(t.a), toRayVec(t.b), toRayVec(t.c), color);
 }
 
+// Draws a rectangle in a raylib window.
 static inline void DrawMyRectangle(MyRectangle r, Color color)
 {
     DrawRectangleLines(r.origin.x, r.origin.y, r.width, r.height, color);
 }
 
+// Draws a polygon in a raylib window.
 static inline void DrawMyPolygon(Polygon poly, Color color)
 {
     DrawPolyLines(toRayVec(poly.origin), poly.sides, poly.radius, radToDeg(poly.rotation), color);
 }
 
+// Draws a circle in a raylib window.
 static inline void DrawMyCircle(Circle c, Color color)
 {
     DrawCircleLines(c.origin.x, c.origin.y, c.radius, color);
 }
 
+// Draws any shape in a raylib window.
 static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
 {
     switch (shape.type)
@@ -488,7 +538,8 @@ static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
     }
 }
 
-// ---------- COLLISIONS ---------- //
+
+// ---------- SHAPE VERTICES AND SIDES ---------- //
 
 // Returns the number of sides of a given shape (returns 2 for rectangles).
 static inline int getSidesNum(ShapeInfo shape)
@@ -503,6 +554,8 @@ static inline int getSidesNum(ShapeInfo shape)
         return 2; // There are only two axes to check for collision in a rectangle.
     case POLYGON:
         return shape.data.polygon.sides;
+    case CIRCLE:
+        return 1;
     default:
         return 0;
     }
@@ -610,6 +663,9 @@ static inline MyVector2 *getVertices(ShapeInfo shape)
     return vertices;
 }
 
+
+// ---------- COLLISIONS ---------- //
+
 // Returns the smallest rectangle that contanins the given shape.
 static inline MyRectangle getBoundingBox(ShapeInfo shape)
 {
@@ -617,9 +673,9 @@ static inline MyRectangle getBoundingBox(ShapeInfo shape)
     if (shape.type == CIRCLE)
     {
         //! Debug render.
-        #ifdef DEBUG_SHOW_BOUNDING_BOXES
-        DrawMyRectangle(RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2), GRAY);
-        #endif
+        if (__debug_bounding_boxes) {
+            DrawMyRectangle(RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2), GRAY);
+        }
 
         return RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2);
     }
@@ -650,32 +706,62 @@ static inline MyRectangle getBoundingBox(ShapeInfo shape)
     free(vertices);
 
     //! Debug render.
-    #ifdef DEBUG_SHOW_BOUNDING_BOXES
-    DrawMyRectangle(RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin), GRAY);
-    #endif
+    if (__debug_bounding_boxes) {
+        DrawMyRectangle(RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin), GRAY);
+    }
 
     return RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
 }
 
-// Get all the axes of a given shape.
-static inline Segment *getAxes(ShapeInfo shape)
+// Returns an axis that passes through the center of the given circle and the center of the given shape.
+static inline Segment *getAxisCircleShape(Circle circle, ShapeInfo shape)
 {
-    // Get all the sides of the given shape.
-    Segment *axes = getSides(shape);
-
-    // Loop over them and get their normals to get the axes.
-    for (int i = 0; i < getSidesNum(shape); i++)
-    {
-        axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(axes[i].a, axes[i].b), 2),
-                                     Vector2Normal(Vector2Normalize(Vector2FromSegment(axes[i]))));
+    Segment* axis = malloc(sizeof(Segment));
+    axis[0] = SegmentFromVector2(circle.origin,
+                                 Vector2Normalize(Vector2FromPoints(circle.origin, ShapeCenterOfMass(shape))));
         
-        
-        //! Debug render.
-        #ifdef DEBUG_SHOW_AXES
-        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axes[i]), 100), axes[i].a, BLUE);
-        #endif
+    //! Debug render.
+    if (__debug_axes) {
+        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axis[0]), 100), axis[0].a, BLUE);
     }
 
+    return axis;
+}
+
+// Get all the axes of two given shapes.
+static inline Segment *getAxes(ShapeInfo shape1, ShapeInfo shape2)
+{
+    if (shape1.type == CIRCLE) {
+        return getAxisCircleShape(shape1.data.circle, shape2);
+    }
+    if (shape2.type == CIRCLE) {
+        return getAxisCircleShape(shape2.data.circle, shape1);
+    }
+
+    // Get all the sides of the given shape.
+    Segment* sides1 = getSides(shape1);
+    Segment* sides2 = getSides(shape2);
+    Segment* axes = malloc(sizeof(Segment) * (getSidesNum(shape1) + getSidesNum(shape2)));
+
+    // Loop over them and get their normals to get the axes.
+    for (int i = 0; i < getSidesNum(shape1) + getSidesNum(shape2); i++)
+    {
+        if (i < getSidesNum(shape1)) {
+            axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(sides1[i].a, sides1[i].b), 2),
+                                         Vector2Normal(Vector2Normalize(Vector2FromSegment(sides1[i]))));
+        }
+        else {
+            axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(sides2[i-getSidesNum(shape1)].a, sides2[i-getSidesNum(shape1)].b), 2),
+                                         Vector2Normal(Vector2Normalize(Vector2FromSegment(sides2[i-getSidesNum(shape1)]))));
+        }
+        
+        //! Debug render.
+        if (__debug_axes) {
+            DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axes[i]), 100), axes[i].a, BLUE);
+        }
+    }
+    free(sides1);
+    free(sides2);
     return axes;
 }
 
@@ -701,9 +787,7 @@ static inline bool collisionAABB(MyRectangle rec1, MyRectangle rec2)
     {
         return true;
     }
-
-    else
-    {
+    else {
         return false;
     }
 }
@@ -725,9 +809,8 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
                                                   Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
 
         //! Debug render.
-        #ifdef DEBUG_SHOW_PROJECTIONS
-        DrawSegment(circle_projection, ORANGE);
-        #endif
+        if (__debug_projections)
+            DrawSegment(circle_projection, ORANGE);
         
         return circle_projection;
     }
@@ -769,9 +852,8 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
     MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
 
     //! Debug render.
-    #ifdef DEBUG_SHOW_PROJECTIONS
-    DrawSegment(SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), Vector2FromPoints(min_point, max_point)), ORANGE);
-    #endif
+    if (__debug_projections)
+        DrawSegment(SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), Vector2FromPoints(min_point, max_point)), ORANGE);
 
     return SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point),
                             Vector2FromPoints(min_point, max_point));
@@ -815,69 +897,43 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
     if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
     {
         //! Debug render.
-        #ifdef DEBUG_SHOW_SHAPES
-        DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
-        #endif
+        if (__debug_shapes) {
+            DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
+        }
 
         // Get the number of sides of both shapes.
-        int sides1 = getSidesNum(shape1);
-        int sides2 = getSidesNum(shape2);
+        int sides = getSidesNum(shape1) + getSidesNum(shape2);
+        if (shape1.type == CIRCLE || shape2.type == CIRCLE) sides = 1;
 
         // Get the axes for both shapes.
-        Segment *axes1 = getAxes(shape1);
-        Segment *axes2 = getAxes(shape2);
+        Segment *axes = getAxes(shape1, shape2);
 
         // Loop over all of the axes.
-        for (int i = 0; i < sides1; i++)
+        for (int i = 0; i < sides; i++)
         {
             // Project both shapes onto the axis.
-            Segment projection1 = projectShapeOnAxis(axes1[i], shape1);
-            Segment projection2 = projectShapeOnAxis(axes1[i], shape2);
+            Segment projection1 = projectShapeOnAxis(axes[i], shape1);
+            Segment projection2 = projectShapeOnAxis(axes[i], shape2);
 
             // If the projections don't overlap, the shapes are not in collision.
             if (!collisionProjections(projection1, projection2))
             {
                 //! Debug render.
-                #ifdef DEBUG_SHOW_FAILED_PROJECTIONS
-                DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
-                #endif
+                if (__debug_failed_projections) {
+                    DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
+                }
 
-                free(axes1);
-                free(axes2);
+                free(axes);
                 return false;
             }
         }
-        for (int i = 0; i < sides2; i++)
-        {
-            // Project both shapes onto the axis.
-            Segment projection1 = projectShapeOnAxis(axes2[i], shape1);
-            Segment projection2 = projectShapeOnAxis(axes2[i], shape2);
-
-            // If the projections don't overlap, the shapes are not in collision.
-            if (!collisionProjections(projection1, projection2))
-            {
-                //! Debug render.
-                #ifdef DEBUG_SHOW_FAILED_PROJECTIONS
-                DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
-                #endif
-
-                if (sides1 > 0)
-                    free(axes1);
-                if (sides2 > 0)
-                    free(axes2);
-                return false;
-            }
-        }
-        if (sides1 > 0)
-            free(axes1);
-        if (sides2 > 0)
-            free(axes2);
+        free(axes);
         return true;
     }
     //! Debug render.
-    #ifdef DEBUG_SHOW_SHAPES
-    DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
-    #endif
+    if (__debug_shapes) {
+        DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
+    }
 
     return false;
 }

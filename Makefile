@@ -19,4 +19,4 @@ test_math: $(OBJS)
 	gcc -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(DEPS) test_math
+	rm -f $(OBJS) $(DEPS) test_math && clear
