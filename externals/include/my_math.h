@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// TODO: Fix circle-shape collision. It currently uses only the circle's axis and not the shape's.
 
 // ---------- DEFINES ---------- //
 
@@ -16,6 +17,7 @@ static bool __debug_bounding_boxes = false;
 static bool __debug_axes = false;
 static bool __debug_projections = false;
 static bool __debug_failed_projections = false;
+static bool __debug_points = false;
 
 
 // ---------- STRUCTURES ---------- //
@@ -395,20 +397,6 @@ static inline double distancePoints(MyVector2 p1, MyVector2 p2)
     return Vector2Length(Vector2FromPoints(p1, p2));
 }
 
-// Returns the side of the given polygon that corresponds to the given index.
-static inline Segment PolygonGetSide(Polygon poly, int index)
-{
-    assert(index < poly.sides);
-
-    double corner_angle = degToRad(360 / poly.sides);
-    double angle_offset = PI/2 + (index * corner_angle);
-
-    MyVector2 poly_point_a = Vector2Add(Vector2FromAngle(angle_offset + poly.rotation, poly.radius), poly.origin);
-    MyVector2 poly_point_b = Vector2Add(Vector2FromAngle(angle_offset + corner_angle + poly.rotation, poly.radius), poly.origin);
-
-    return SegmentCreate(poly_point_a, poly_point_b);
-}
-
 
 // ---------- CENTER OF MASS ---------- //
 
@@ -539,7 +527,7 @@ static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
 }
 
 
-// ---------- SHAPE VERTICES AND SIDES ---------- //
+// ---------- SHAPE SIDES ---------- //
 
 // Returns the number of sides of a given shape (returns 2 for rectangles).
 static inline int getSidesNum(ShapeInfo shape)
@@ -561,47 +549,84 @@ static inline int getSidesNum(ShapeInfo shape)
     }
 }
 
-// Returns the sides of a given shape as segments.
-static inline Segment *getSides(ShapeInfo shape)
+// Returns the side of the given tiangle that corresponds to the given index.
+static inline Segment TriangleGetSide(Triangle triangle, int index)
 {
-    Segment *sides;
+    assert (index < 3);
 
+    switch (index)
+    {
+    case 0:
+        return SegmentCreate(triangle.a, triangle.b);
+    case 1:
+        return SegmentCreate(triangle.b, triangle.c);
+    case 2:
+        return SegmentCreate(triangle.c, triangle.a);
+    default:
+        return SegmentCreate(Vector2Zero(), Vector2Zero());
+    }
+}
+
+// Returns the side of the given rectangle that corresponds to the given index.
+static inline Segment RectangleGetSide(MyRectangle rectangle, int index)
+{
+    assert (index < 4);
+
+    switch (index)
+    {
+    case 0:
+        return SegmentCreate(Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y),
+                             rectangle.origin);
+    case 1:
+        return SegmentCreate(rectangle.origin,
+                             Vector2Create(rectangle.origin.x, rectangle.origin.y + rectangle.height));
+    case 2:
+        return SegmentCreate(Vector2Create(rectangle.origin.x, rectangle.origin.y + rectangle.height),
+                             Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y + rectangle.height));
+    case 3:
+        return SegmentCreate(Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y + rectangle.height),
+                             Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y));
+    default:
+        return SegmentCreate(Vector2Zero(), Vector2Zero());
+    }
+}
+
+// Returns the side of the given polygon that corresponds to the given index.
+static inline Segment PolygonGetSide(Polygon poly, int index)
+{
+    assert(index < poly.sides);
+
+    double corner_angle = degToRad(360 / poly.sides);
+    double angle_offset = PI/2 + (index * corner_angle);
+
+    MyVector2 poly_point_a = Vector2Add(Vector2FromAngle(angle_offset + poly.rotation, poly.radius), poly.origin);
+    MyVector2 poly_point_b = Vector2Add(Vector2FromAngle(angle_offset + corner_angle + poly.rotation, poly.radius), poly.origin);
+
+    return SegmentCreate(poly_point_a, poly_point_b);
+}
+
+// Returns the side of the given shape that corresponds to the given index.
+// Returns a (0, 0) segment if the shape type is not supported (circle and vector).
+static inline Segment ShapeGetSide(ShapeInfo shape, int index)
+{
     switch (shape.type)
     {
     case SEGMENT:
-        sides = malloc(sizeof(Segment));
-        sides[0] = shape.data.segment;
-        break;
-
+        assert (index < 1);
+        return shape.data.segment;
     case TRIANGLE:
-        sides = malloc(sizeof(Segment) * 3);
-        sides[0] = SegmentCreate(shape.data.triangle.a, shape.data.triangle.b);
-        sides[1] = SegmentCreate(shape.data.triangle.b, shape.data.triangle.c);
-        sides[2] = SegmentCreate(shape.data.triangle.c, shape.data.triangle.a);
-        break;
-
-    case RECTANGLE: // There are only two axes to check for collision in a rectangle.
-        sides = malloc(sizeof(Segment) * 2);
-        sides[0] = SegmentCreate(shape.data.rectangle.origin,
-                                 Vector2Create(shape.data.rectangle.origin.x + shape.data.rectangle.width, shape.data.rectangle.origin.y));
-        sides[1] = SegmentCreate(shape.data.rectangle.origin,
-                                 Vector2Create(shape.data.rectangle.origin.x, shape.data.rectangle.origin.y + shape.data.rectangle.height));
-        break;
-
+        return TriangleGetSide(shape.data.triangle, index);
+    case RECTANGLE:
+        return RectangleGetSide(shape.data.rectangle, index);
     case POLYGON:
-        sides = malloc(sizeof(Segment) * shape.data.polygon.sides);
-        for (int i = 0; i < shape.data.polygon.sides; i++)
-        {
-            sides[i] = PolygonGetSide(shape.data.polygon, i);
-        }
-        break;
-
+        return PolygonGetSide(shape.data.polygon, index);
     default:
-        break;
+        return SegmentCreate(Vector2Zero(), Vector2Zero());
     }
-
-    return sides;
 }
+
+
+// ---------- SHAPE VERTICES ---------- //
 
 // Returns the number of vertices of a given shape.
 static inline int getVerticesNum(ShapeInfo shape)
@@ -625,42 +650,83 @@ static inline int getVerticesNum(ShapeInfo shape)
     return vertices_num;
 }
 
-// Returns the vertices of a given shape as vectors.
-static inline MyVector2 *getVertices(ShapeInfo shape)
+// Returns the vertex of the given segment that corresponds to the given index.
+static inline MyVector2 SegmentGetVertex(Segment segment, int index)
 {
-    MyVector2 *vertices;
+    assert (index < 2);
 
+    switch (index)
+    {
+    case 0:
+        return segment.a;
+    case 1:
+        return segment.b;
+    default:
+        return Vector2Create(100000, 1000000);
+    }
+}
+
+// Returns the vertex of the given triangle that corresponds to the given index.
+static inline MyVector2 TriangleGetVertex(Triangle triangle, int index)
+{
+    assert (index < 3);
+
+    switch (index)
+    {
+    case 0:
+        return triangle.a;
+    case 1:
+        return triangle.b;
+    case 2:
+        return triangle.c;
+    default:
+        return Vector2Create(1000000, 1000000);
+    }
+}
+
+// Returns the vertex of the given rectangle that corresponds to the given index.
+static inline MyVector2 RectangleGetVertex(MyRectangle rectangle, int index)
+{
+    assert (index < 4);
+
+    switch (index)
+    {
+    case 0:
+        return Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y);
+    case 1:
+        return rectangle.origin;
+    case 2:
+        return Vector2Create(rectangle.origin.x, rectangle.origin.y + rectangle.height);
+    case 3:
+        return Vector2Create(rectangle.origin.x + rectangle.width, rectangle.origin.y + rectangle.height);
+    default:
+        return Vector2Create(1000000, 1000000);
+    }
+}
+
+// Returns the vertex of the given polygon that corresponds to the given index.
+static inline MyVector2 PolygonGetVertex(Polygon polygon, int index)
+{
+    assert (index < polygon.sides);
+    return PolygonGetSide(polygon, index).a;
+}
+
+// Returns the vertex of the given shape that corresponds to the given index.
+static inline MyVector2 ShapeGetVertex(ShapeInfo shape, int index)
+{
     switch (shape.type)
     {
     case SEGMENT:
-        vertices = malloc(sizeof(MyVector2) * 2);
-        vertices[0] = shape.data.segment.a;
-        vertices[1] = shape.data.segment.b;
-        break;
+        return SegmentGetVertex(shape.data.segment, index);
     case TRIANGLE:
-        vertices = malloc(sizeof(MyVector2) * 3);
-        vertices[0] = shape.data.triangle.a;
-        vertices[1] = shape.data.triangle.b;
-        vertices[2] = shape.data.triangle.c;
-        break;
+        return TriangleGetVertex(shape.data.triangle, index);
     case RECTANGLE:
-        vertices = malloc(sizeof(MyVector2) * 4);
-        vertices[0] = shape.data.rectangle.origin;
-        vertices[1] = Vector2Create(shape.data.rectangle.origin.x + shape.data.rectangle.width, shape.data.rectangle.origin.y);
-        vertices[2] = Vector2Create(shape.data.rectangle.origin.x + shape.data.rectangle.width, shape.data.rectangle.origin.y + shape.data.rectangle.height);
-        vertices[3] = Vector2Create(shape.data.rectangle.origin.x, shape.data.rectangle.origin.y + shape.data.rectangle.height);
-        break;
+        return RectangleGetVertex(shape.data.rectangle, index);
     case POLYGON:
-        vertices = malloc(sizeof(MyVector2) * shape.data.polygon.sides);
-        for (int i = 0; i < shape.data.polygon.sides; i++)
-        {
-            vertices[i] = PolygonGetSide(shape.data.polygon, i).a;
-        }
+        return PolygonGetVertex(shape.data.polygon, index);
     default:
-        break;
+        return Vector2Create(1000000, 1000000);
     }
-
-    return vertices;
 }
 
 
@@ -682,87 +748,88 @@ static inline MyRectangle getBoundingBox(ShapeInfo shape)
 
     // Get the shape's vertices information.
     int vertices_num = getVerticesNum(shape);
-    MyVector2 *vertices = getVertices(shape);
 
     // Create the min and max values for x and y.
-    double xmin = vertices[0].x;
-    double xmax = vertices[0].x;
-    double ymin = vertices[0].y;
-    double ymax = vertices[0].y;
+    MyVector2 vertex = ShapeGetVertex(shape, 0);
+    double xmin = vertex.x;
+    double xmax = vertex.x;
+    double ymin = vertex.y;
+    double ymax = vertex.y;
 
     // Loop though the vertices and find the min and max values for x and y.
-    for (int i = 0; i < vertices_num; i++)
+    for (int i = 1; i < vertices_num; i++)
     {
-        if (vertices[i].x <= xmin)
-            xmin = vertices[i].x;
-        if (vertices[i].x >= xmax)
-            xmax = vertices[i].x;
-        if (vertices[i].y <= ymin)
-            ymin = vertices[i].y;
-        if (vertices[i].y >= ymax)
-            ymax = vertices[i].y;
+        vertex = ShapeGetVertex(shape, i);
+        if (vertex.x <= xmin)
+            xmin = vertex.x;
+        if (vertex.x >= xmax)
+            xmax = vertex.x;
+        if (vertex.y <= ymin)
+            ymin = vertex.y;
+        if (vertex.y >= ymax)
+            ymax = vertex.y;
     }
 
-    free(vertices);
+    // Create the shape's bounding box.
+    MyRectangle bounding_box = RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
 
     //! Debug render.
     if (__debug_bounding_boxes) {
-        DrawMyRectangle(RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin), GRAY);
+        DrawMyRectangle(bounding_box, GRAY);
     }
 
-    return RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
+    return bounding_box;
 }
 
 // Returns an axis that passes through the center of the given circle and the center of the given shape.
-static inline Segment *getAxisCircleShape(Circle circle, ShapeInfo shape)
+static inline Segment CircleGetAxis(Circle circle, ShapeInfo shape)
 {
-    Segment* axis = malloc(sizeof(Segment));
-    axis[0] = SegmentFromVector2(circle.origin,
-                                 Vector2Normalize(Vector2FromPoints(circle.origin, ShapeCenterOfMass(shape))));
-        
+    // Make a segment that starts at the center of the circle, goes in the direction of the center of the shape and is of length 1.
+    return SegmentFromVector2(circle.origin,
+                              Vector2Normalize(Vector2FromPoints(circle.origin, ShapeCenterOfMass(shape))));
+}
+
+// Returns the axis of the given shapes that corresponds to the given index.
+static inline Segment ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int index)
+{
+    assert (index < getSidesNum(shape1) + getSidesNum(shape2));
+
+    Segment side;
+    Segment axis;
+
+    // If the given index refers to an axis of the first shape...
+    if (index < getSidesNum(shape1))
+    {
+        // If the first shape is not a circle, get the side pointed to by the index and calculate its normal.
+        if (shape1.type != CIRCLE) {
+            side = ShapeGetSide(shape1, index);
+            axis = SegmentFromVector2(Vector2DivideVal(Vector2Add(side.a, side.b), 2),
+                                        Vector2Normal(Vector2Normalize(Vector2FromSegment(side))));
+        }
+        // If the first shape is a circle, get its axis.
+        else
+            axis = CircleGetAxis(shape1.data.circle, shape2);
+    }
+    // If the given index refers to an axis of the second shape...
+    else
+    {
+        // If the second shape is not a circle, get the side pointed to by the index and calculate its normal.
+        if (shape2.type != CIRCLE) {
+            side = ShapeGetSide(shape2, index - getSidesNum(shape1));
+            axis = SegmentFromVector2(Vector2DivideVal(Vector2Add(side.a, side.b), 2),
+                                        Vector2Normal(Vector2Normalize(Vector2FromSegment(side))));
+        }
+        // If the second shape is a circle, get its axis.
+        else
+            axis = CircleGetAxis(shape2.data.circle, shape1);
+    }
+
     //! Debug render.
     if (__debug_axes) {
-        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axis[0]), 100), axis[0].a, BLUE);
+        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axis), 100), axis.a, BLUE);
     }
 
     return axis;
-}
-
-// Get all the axes of two given shapes.
-static inline Segment *getAxes(ShapeInfo shape1, ShapeInfo shape2)
-{
-    if (shape1.type == CIRCLE) {
-        return getAxisCircleShape(shape1.data.circle, shape2);
-    }
-    if (shape2.type == CIRCLE) {
-        return getAxisCircleShape(shape2.data.circle, shape1);
-    }
-
-    // Get all the sides of the given shape.
-    Segment* sides1 = getSides(shape1);
-    Segment* sides2 = getSides(shape2);
-    Segment* axes = malloc(sizeof(Segment) * (getSidesNum(shape1) + getSidesNum(shape2)));
-
-    // Loop over them and get their normals to get the axes.
-    for (int i = 0; i < getSidesNum(shape1) + getSidesNum(shape2); i++)
-    {
-        if (i < getSidesNum(shape1)) {
-            axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(sides1[i].a, sides1[i].b), 2),
-                                         Vector2Normal(Vector2Normalize(Vector2FromSegment(sides1[i]))));
-        }
-        else {
-            axes[i] = SegmentFromVector2(Vector2DivideVal(Vector2Add(sides2[i-getSidesNum(shape1)].a, sides2[i-getSidesNum(shape1)].b), 2),
-                                         Vector2Normal(Vector2Normalize(Vector2FromSegment(sides2[i-getSidesNum(shape1)]))));
-        }
-        
-        //! Debug render.
-        if (__debug_axes) {
-            DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axes[i]), 100), axes[i].a, BLUE);
-        }
-    }
-    free(sides1);
-    free(sides2);
-    return axes;
 }
 
 // Returns true if the given point is colliding with the given circle.
@@ -809,6 +876,13 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
                                                   Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
 
         //! Debug render.
+        if (__debug_points) {
+            DrawPoint(shape.data.circle.origin, WHITE);
+            DrawPoint(Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), SKYBLUE);
+            DrawPoint(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), BLUE);
+        }
+
+        //! Debug render.
         if (__debug_projections) {
             DrawSegment(circle_projection, ORANGE);
         }
@@ -820,16 +894,20 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
 
     // Get all the vertices of the shape.
     int vertices_num = getVerticesNum(shape);
-    MyVector2 *vertices = getVertices(shape);
-
+    MyVector2 vertex;
     MyVector2 projected_points[vertices_num];
 
     // Loop over the vertices of the shape and get their projections onto the axis.
     for (int i = 0; i < vertices_num; i++)
     {
-        projected_points[i] = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, vertices[i]), axis_vec)));
+        vertex = ShapeGetVertex(shape, i);
+        projected_points[i] = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, vertex), axis_vec)));
+
+        //! Debug render.
+        if (__debug_points) {
+            DrawCircle(projected_points[i].x, projected_points[i].y, 2, WHITE);
+        }
     }
-    free(vertices);
 
     // Find the closest and farthest points from the axis origin.
     MyVector2 min_point = projected_points[0];
@@ -850,15 +928,22 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
         }
     }
 
+    //! Debug render.
+    if (__debug_points) {
+        DrawCircle(min_point.x, min_point.y, 2, SKYBLUE);
+        DrawCircle(max_point.x, max_point.y, 2, BLUE);
+    }
+
     MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
+    Segment projection = SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), 
+                                            Vector2FromPoints(min_point, max_point));
 
     //! Debug render.
     if (__debug_projections) {
-        DrawSegment(SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), Vector2FromPoints(min_point, max_point)), ORANGE);
+        DrawSegment(projection, ORANGE);
     }
 
-    return SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point),
-                            Vector2FromPoints(min_point, max_point));
+    return projection;
 }
 
 // Returns true if the given point is colliding with the given segment.
@@ -905,17 +990,13 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
 
         // Get the number of sides of both shapes.
         int sides = getSidesNum(shape1) + getSidesNum(shape2);
-        if (shape1.type == CIRCLE || shape2.type == CIRCLE) sides = 1;
-
-        // Get the axes for both shapes.
-        Segment *axes = getAxes(shape1, shape2);
 
         // Loop over all of the axes.
         for (int i = 0; i < sides; i++)
         {
             // Project both shapes onto the axis.
-            Segment projection1 = projectShapeOnAxis(axes[i], shape1);
-            Segment projection2 = projectShapeOnAxis(axes[i], shape2);
+            Segment projection1 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
+            Segment projection2 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
 
             // If the projections don't overlap, the shapes are not in collision.
             if (!collisionProjections(projection1, projection2))
@@ -924,12 +1005,9 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
                 if (__debug_failed_projections) {
                     DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
                 }
-
-                free(axes);
                 return false;
             }
         }
-        free(axes);
         return true;
     }
     //! Debug render.

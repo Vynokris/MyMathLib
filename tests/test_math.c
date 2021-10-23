@@ -96,6 +96,9 @@ int main(void)
         // Show/hide failed projections.
         if (IsKeyPressed(KEY_KP_MULTIPLY))
             __debug_failed_projections = !__debug_failed_projections;
+        // Show/hide projected points.
+        if (IsKeyPressed(KEY_KP_ENTER))
+            __debug_points = !__debug_points;
 
 
         // ------- DISPLAY ------- //
