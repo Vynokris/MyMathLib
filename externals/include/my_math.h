@@ -331,7 +331,7 @@ static inline MyVector2 Vector2Normalize(MyVector2 v)
 // Returns the angle (in radians) of the given vector.
 static inline double Vector2GetAngle(MyVector2 v)
 {
-    return acos(Vector2Normalize(v).x);
+    return copysign(acos(Vector2Normalize(v).x), asin(Vector2Normalize(v).y));
 }
 
 // Modifies the length of the given vector to correspond to the given value.
