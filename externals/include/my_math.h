@@ -76,6 +76,7 @@ typedef enum ShapeTypes {
     CIRCLE,
 } ShapeTypes;
 
+// Structure for shape info, holds shape type and data.
 typedef struct ShapeInfo {
     ShapeTypes type;
     Shape data;
