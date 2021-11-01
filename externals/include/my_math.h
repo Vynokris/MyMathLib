@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// TODO: Fix circle-shape collision. It currently uses only the circle's axis and not the shape's.
-
 // ---------- DEFINES ---------- //
 
 static bool __debug_shapes = false;
