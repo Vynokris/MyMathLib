@@ -86,8 +86,7 @@ typedef struct ShapeInfo {
 // ---------- CONVERSIONS --------- //
 
 // Converts a my_math 2D vector to a raylib 2D vector.
-static inline Vector2
-toRayVec(MyVector2 v)
+static inline Vector2 toRayVec(MyVector2 v)
 {
     return (Vector2){v.x, v.y};
 }
