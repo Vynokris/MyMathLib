@@ -975,12 +975,16 @@ static inline bool collisionProjections(Segment projection1, Segment projection2
 // Checks for collision between two given shapes.
 static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
 {
-    // If both the shapes are, circles, don't use SAT.
+    // If both shapes are circles, don't use SAT.
     if (shape1.type == CIRCLE && shape2.type == CIRCLE)
-        collisionCircles(shape1.data.circle, shape2.data.circle);
+        return collisionCircles(shape1.data.circle, shape2.data.circle);
+
+    // If both shapes are rectangles, don't use SAT.
+    else if (shape1.type == RECTANGLE && shape2.type == RECTANGLE)
+        return collisionAABB(shape1.data.rectangle, shape2.data.rectangle);
 
     // Check for collisions on the shapes' bounding boxes to not have to check if they are not in collision.
-    if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
+    else if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
     {
         //! Debug render.
         if (__debug_shapes) {
