@@ -27,14 +27,14 @@ typedef struct MyVector2 {
 } MyVector2;
 
 // Sgment structure that holds values for the starting point and the end point.
-typedef struct Segment {
+typedef struct MySegment {
     MyVector2 a, b;
-} Segment;
+} MySegment;
 
 // Triangle structure that holds values for 3 points.
-typedef struct Triangle {
+typedef struct MyTriangle {
     MyVector2 a, b, c;
-} Triangle;
+} MyTriangle;
 
 // Rectangle structure that holds values for the origin point, width and height.
 typedef struct MyRectangle {
@@ -43,27 +43,27 @@ typedef struct MyRectangle {
 } MyRectangle;
 
 // Polygon structure that holds values for the origin point, the radius and the number of sides.
-typedef struct Polygon {
+typedef struct MyPolygon {
     MyVector2 origin;
     double radius;
     double rotation;
     int sides;
-} Polygon;
+} MyPolygon;
 
 // Circle structure that holds values for the origin point and radius.
-typedef struct Circle {
+typedef struct MyCircle {
     MyVector2 origin;
     double radius;
-} Circle;
+} MyCircle;
 
 // Union that can contain any shape.
 typedef union Shape {
     MyVector2 vector;
-    Segment segment;
-    Triangle triangle;
+    MySegment segment;
+    MyTriangle triangle;
     MyRectangle rectangle;
-    Polygon polygon;
-    Circle circle;
+    MyPolygon polygon;
+    MyCircle circle;
 } Shape;
 
 // Shape types enum.
@@ -213,27 +213,27 @@ static inline MyVector2 Vector2FromAngle(double rad, double length)
 }
 
 // Creates a 2D vector from a segement.
-static inline MyVector2 Vector2FromSegment(Segment s)
+static inline MyVector2 Vector2FromSegment(MySegment s)
 {
     return Vector2FromPoints(s.a, s.b);
 }
 
 // Creates a segment from one point to another.
-static inline Segment SegmentCreate(MyVector2 a, MyVector2 b)
+static inline MySegment SegmentCreate(MyVector2 a, MyVector2 b)
 {
-    return (Segment){a, b};
+    return (MySegment){a, b};
 }
 
 // Creates a segment given an origin point and a vector.
-static inline Segment SegmentFromVector2(MyVector2 origin, MyVector2 v)
+static inline MySegment SegmentFromVector2(MyVector2 origin, MyVector2 v)
 {
     return SegmentCreate(origin, Vector2Create(origin.x + v.x, origin.y + v.y));
 }
 
 // Creates a triangle given three points.
-static inline Triangle TriangleCreate(MyVector2 a, MyVector2 b, MyVector2 c)
+static inline MyTriangle TriangleCreate(MyVector2 a, MyVector2 b, MyVector2 c)
 {
-    return (Triangle){a, b, c};
+    return (MyTriangle){a, b, c};
 }
 
 // Creates a rectangle given an origin point, a width and a height.
@@ -243,15 +243,15 @@ static inline MyRectangle RectangleCreate(MyVector2 origin, double width, double
 }
 
 // Create a polygon given an origin point, a radius and a number of sides.
-static inline Polygon PolygonCreate(MyVector2 origin, double radius, double rotation, int sides)
+static inline MyPolygon PolygonCreate(MyVector2 origin, double radius, double rotation, int sides)
 {
-    return (Polygon){origin, radius, rotation, sides};
+    return (MyPolygon){origin, radius, rotation, sides};
 }
 
 // Create a circle given an origin point and a radius.
-static inline Circle CircleCreate(MyVector2 origin, double radius)
+static inline MyCircle CircleCreate(MyVector2 origin, double radius)
 {
-    return (Circle){origin, radius};
+    return (MyCircle){origin, radius};
 }
 
 // ---------- VECTOR MATH FUNCTIONS ---------- //
@@ -400,13 +400,13 @@ static inline double distancePoints(MyVector2 p1, MyVector2 p2)
 // ---------- CENTER OF MASS ---------- //
 
 // Returns the center of mass of a given segment.
-static inline MyVector2 SegmentCenterOfMass(Segment segment)
+static inline MyVector2 SegmentCenterOfMass(MySegment segment)
 {
     return Vector2Create((segment.a.x + segment.b.x) / 2, (segment.a.y + segment.b.y) / 2);
 }
 
 // Returns the center of mass of a given triangle.
-static inline MyVector2 TriangleCenterOfMass(Triangle triangle)
+static inline MyVector2 TriangleCenterOfMass(MyTriangle triangle)
 {
     return Vector2Create((triangle.a.x + triangle.b.x + triangle.c.x) / 3, (triangle.a.y + triangle.b.y + triangle.c.y) / 3);
 }
@@ -418,13 +418,13 @@ static inline MyVector2 RectangleCenterOfMass(MyRectangle rectangle)
 }
 
 // Returns the center of mass of a given polygon.
-static inline MyVector2 PolygonCenterOfMass(Polygon poly)
+static inline MyVector2 PolygonCenterOfMass(MyPolygon poly)
 {
     return poly.origin;
 }
 
 // Returns the center of mass of a given circle.
-static inline MyVector2 CircleCenterOfMass(Circle circle)
+static inline MyVector2 CircleCenterOfMass(MyCircle circle)
 {
     return circle.origin;
 }
@@ -453,20 +453,20 @@ static inline MyVector2 ShapeCenterOfMass(ShapeInfo shape)
 // ---------- DRAWING FUNCTIONS ---------- //
 
 // Draws a point in a raylib window.
-static inline void DrawPoint(MyVector2 p, Color color)
+static inline void DrawMyPoint(MyVector2 p, Color color)
 {
     DrawCircle(p.x, p.y, 2, color);
 }
 
 // Draws a vector at a certain origin point of a raylib window.
-static inline void DrawVector2(MyVector2 v, MyVector2 origin, Color color)
+static inline void DrawMyVector2(MyVector2 v, MyVector2 origin, Color color)
 {
     DrawLine(origin.x, origin.y, origin.x + v.x, origin.y + v.y, color);
     DrawPoly(toRayVec(Vector2Add(origin, v)), 3, 4, radToDeg(Vector2GetAngle(v) - PI/2), color);
 }
 
 // Draws a segment in a raylib window.
-static inline void DrawSegment(Segment s, Color color)
+static inline void DrawMySegment(MySegment s, Color color)
 {
     DrawLine(s.a.x, s.a.y, s.b.x, s.b.y, color);
     DrawCircle(s.a.x, s.a.y, 2, color);
@@ -474,7 +474,7 @@ static inline void DrawSegment(Segment s, Color color)
 }
 
 // Draws a triangle in a raylib window.
-static inline void DrawMyTriangle(Triangle t, Color color)
+static inline void DrawMyTriangle(MyTriangle t, Color color)
 {
     DrawTriangleLines(toRayVec(t.a), toRayVec(t.b), toRayVec(t.c), color);
 }
@@ -486,13 +486,13 @@ static inline void DrawMyRectangle(MyRectangle r, Color color)
 }
 
 // Draws a polygon in a raylib window.
-static inline void DrawMyPolygon(Polygon poly, Color color)
+static inline void DrawMyPolygon(MyPolygon poly, Color color)
 {
     DrawPolyLines(toRayVec(poly.origin), poly.sides, poly.radius, radToDeg(poly.rotation), color);
 }
 
 // Draws a circle in a raylib window.
-static inline void DrawMyCircle(Circle c, Color color)
+static inline void DrawMyCircle(MyCircle c, Color color)
 {
     DrawCircleLines(c.origin.x, c.origin.y, c.radius, color);
 }
@@ -503,10 +503,10 @@ static inline void DrawShape(ShapeInfo shape, MyVector2 origin, Color color)
     switch (shape.type)
     {
     case VECTOR2:
-        DrawVector2(shape.data.vector, origin, color);
+        DrawMyVector2(shape.data.vector, origin, color);
         break;
     case SEGMENT:
-        DrawSegment(shape.data.segment, color);
+        DrawMySegment(shape.data.segment, color);
         break;
     case TRIANGLE:
         DrawMyTriangle(shape.data.triangle, color);
@@ -549,7 +549,7 @@ static inline int getSidesNum(ShapeInfo shape)
 }
 
 // Returns the side of the given tiangle that corresponds to the given index.
-static inline Segment TriangleGetSide(Triangle triangle, int index)
+static inline MySegment TriangleGetSide(MyTriangle triangle, int index)
 {
     assert (index < 3);
 
@@ -567,7 +567,7 @@ static inline Segment TriangleGetSide(Triangle triangle, int index)
 }
 
 // Returns the side of the given rectangle that corresponds to the given index.
-static inline Segment RectangleGetSide(MyRectangle rectangle, int index)
+static inline MySegment RectangleGetSide(MyRectangle rectangle, int index)
 {
     assert (index < 4);
 
@@ -591,7 +591,7 @@ static inline Segment RectangleGetSide(MyRectangle rectangle, int index)
 }
 
 // Returns the side of the given polygon that corresponds to the given index.
-static inline Segment PolygonGetSide(Polygon poly, int index)
+static inline MySegment PolygonGetSide(MyPolygon poly, int index)
 {
     assert(index < poly.sides);
 
@@ -606,7 +606,7 @@ static inline Segment PolygonGetSide(Polygon poly, int index)
 
 // Returns the side of the given shape that corresponds to the given index.
 // Returns a (0, 0) segment if the shape type is not supported (circle and vector).
-static inline Segment ShapeGetSide(ShapeInfo shape, int index)
+static inline MySegment ShapeGetSide(ShapeInfo shape, int index)
 {
     switch (shape.type)
     {
@@ -650,7 +650,7 @@ static inline int getVerticesNum(ShapeInfo shape)
 }
 
 // Returns the vertex of the given segment that corresponds to the given index.
-static inline MyVector2 SegmentGetVertex(Segment segment, int index)
+static inline MyVector2 SegmentGetVertex(MySegment segment, int index)
 {
     assert (index < 2);
 
@@ -666,7 +666,7 @@ static inline MyVector2 SegmentGetVertex(Segment segment, int index)
 }
 
 // Returns the vertex of the given triangle that corresponds to the given index.
-static inline MyVector2 TriangleGetVertex(Triangle triangle, int index)
+static inline MyVector2 TriangleGetVertex(MyTriangle triangle, int index)
 {
     assert (index < 3);
 
@@ -704,7 +704,7 @@ static inline MyVector2 RectangleGetVertex(MyRectangle rectangle, int index)
 }
 
 // Returns the vertex of the given polygon that corresponds to the given index.
-static inline MyVector2 PolygonGetVertex(Polygon polygon, int index)
+static inline MyVector2 PolygonGetVertex(MyPolygon polygon, int index)
 {
     assert (index < polygon.sides);
     return PolygonGetSide(polygon, index).a;
@@ -781,7 +781,7 @@ static inline MyRectangle getBoundingBox(ShapeInfo shape)
 }
 
 // Returns an axis that passes through the center of the given circle and the center of the given shape.
-static inline Segment CircleGetAxis(Circle circle, ShapeInfo shape)
+static inline MySegment CircleGetAxis(MyCircle circle, ShapeInfo shape)
 {
     // Make a segment that starts at the center of the circle, goes in the direction of the center of the shape and is of length 1.
     return SegmentFromVector2(circle.origin,
@@ -789,12 +789,12 @@ static inline Segment CircleGetAxis(Circle circle, ShapeInfo shape)
 }
 
 // Returns the axis of the given shapes that corresponds to the given index.
-static inline Segment ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int index)
+static inline MySegment ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int index)
 {
     assert (index < getSidesNum(shape1) + getSidesNum(shape2));
 
-    Segment side;
-    Segment axis;
+    MySegment side;
+    MySegment axis;
 
     // If the given index refers to an axis of the first shape...
     if (index < getSidesNum(shape1))
@@ -825,20 +825,20 @@ static inline Segment ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int inde
 
     //! Debug render.
     if (__debug_axes) {
-        DrawVector2(Vector2MultiplyVal(Vector2FromSegment(axis), 100), axis.a, BLUE);
+        DrawMyVector2(Vector2MultiplyVal(Vector2FromSegment(axis), 100), axis.a, BLUE);
     }
 
     return axis;
 }
 
 // Returns true if the given point is colliding with the given circle.
-static inline bool collisionCirclePoint(Circle c, MyVector2 p)
+static inline bool collisionCirclePoint(MyCircle c, MyVector2 p)
 {
     return (distancePoints(c.origin, p) <= c.radius ? true : false);
 }
 
 // Returns true if the given circles are in collision.
-static inline bool collisionCircles(Circle c1, Circle c2)
+static inline bool collisionCircles(MyCircle c1, MyCircle c2)
 {
     return (distancePoints(c1.origin, c2.origin) <= c1.radius + c2.radius ? true : false);
 }
@@ -859,7 +859,7 @@ static inline bool collisionAABB(MyRectangle rec1, MyRectangle rec2)
 }
 
 // Project a shape onto a given axis.
-static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
+static inline MySegment projectShapeOnAxis(MySegment axis, ShapeInfo shape)
 {
     // Get the axis' vector.
     MyVector2 axis_vec = Vector2FromSegment(axis);
@@ -871,19 +871,19 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
         MyVector2 origin_projection = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, shape.data.circle.origin), axis_vec)));
 
         // Create a segment of the circle's projection.
-        Segment circle_projection = SegmentCreate(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)),
+        MySegment circle_projection = SegmentCreate(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)),
                                                   Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
 
         //! Debug render.
         if (__debug_points) {
-            DrawPoint(shape.data.circle.origin, WHITE);
-            DrawPoint(Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), SKYBLUE);
-            DrawPoint(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), BLUE);
+            DrawMyPoint(shape.data.circle.origin, WHITE);
+            DrawMyPoint(Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), SKYBLUE);
+            DrawMyPoint(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), BLUE);
         }
 
         //! Debug render.
         if (__debug_projections) {
-            DrawSegment(circle_projection, ORANGE);
+            DrawMySegment(circle_projection, ORANGE);
         }
         
         return circle_projection;
@@ -934,19 +934,19 @@ static inline Segment projectShapeOnAxis(Segment axis, ShapeInfo shape)
     }
 
     MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
-    Segment projection = SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), 
+    MySegment projection = SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), 
                                             Vector2FromPoints(min_point, max_point));
 
     //! Debug render.
     if (__debug_projections) {
-        DrawSegment(projection, ORANGE);
+        DrawMySegment(projection, ORANGE);
     }
 
     return projection;
 }
 
 // Returns true if the given point is colliding with the given segment.
-static inline bool collisionSegmentPoint(Segment segment, MyVector2 point)
+static inline bool collisionSegmentPoint(MySegment segment, MyVector2 point)
 {
     if (roundInt(Vector2CrossProduct(Vector2FromSegment(segment), Vector2FromPoints(segment.a, point))) == 0)
     {
@@ -960,7 +960,7 @@ static inline bool collisionSegmentPoint(Segment segment, MyVector2 point)
 }
 
 // Returns true if the given projections are colliding each others
-static inline bool collisionProjections(Segment projection1, Segment projection2)
+static inline bool collisionProjections(MySegment projection1, MySegment projection2)
 {
     if (collisionSegmentPoint(projection1, projection2.a) ||
         collisionSegmentPoint(projection1, projection2.b) ||
@@ -998,15 +998,15 @@ static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
         for (int i = 0; i < sides; i++)
         {
             // Project both shapes onto the axis.
-            Segment projection1 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
-            Segment projection2 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
+            MySegment projection1 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
+            MySegment projection2 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
 
             // If the projections don't overlap, the shapes are not in collision.
             if (!collisionProjections(projection1, projection2))
             {
                 //! Debug render.
                 if (__debug_failed_projections) {
-                    DrawSegment(projection1, PINK); DrawSegment(projection2, PINK);
+                    DrawMySegment(projection1, PINK); DrawMySegment(projection2, PINK);
                 }
                 return false;
             }
