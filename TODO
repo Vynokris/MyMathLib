@@ -1,0 +1,7 @@
+Restructuration:
+- namespace MyMath + faire namespace par domaine mathématique etc...
+- Classes
+
+New features:
+- Faire chaque domaine math (commencer par fonctions arithmétiques)
+- Opérate
