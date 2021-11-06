@@ -1,7 +1,10 @@
-Restructuration:
-- namespace MyMath + faire namespace par domaine mathématique etc...
-- Classes
+To fix:
+- Type comparaison issue
+
 
 New features:
-- Faire chaque domaine math (commencer par fonctions arithmétiques)
-- Opérate
+
+- Arithmetics:
+    - Vector3 & Vector4
+
+- Physics
