@@ -3,7 +3,7 @@ CPPFLAGS= -Iexternals/include
 LDLIBS=-lraylib -lm -ldl -lpthread
 LDFLAGS=-Lexternals/libs
 
-OBJS=tests/test_math.o
+OBJS=externals/include/my_math.o tests/test_math.o
 
 .PHONY: all clean
 

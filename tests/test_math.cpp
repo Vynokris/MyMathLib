@@ -1,8 +1,8 @@
 #include <iostream>
 #include <my_math.hpp>
 
-using namespace MyMathLib;
-using namespace geometry;
+using namespace MyMathLib::collisions;
+
 
 int main(void)
 {
