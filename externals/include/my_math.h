@@ -396,6 +396,36 @@ static inline double distancePoints(MyVector2 p1, MyVector2 p2)
     return Vector2Length(Vector2FromPoints(p1, p2));
 }
 
+// Rotates the given point around the given pivot point, by the given angle (in rad).
+static inline MyVector2 PointRotate(MyVector2 point, MyVector2 pivot, double angle)
+{
+    float s = sin(angle);
+    float c = cos(angle);
+
+    // Translate the point back to the origin.
+    point.x -= pivot.x;
+    point.y -= pivot.y;
+
+    // Rotate the point around the origin.
+    float xnew = point.x * c - point.y * s;
+    float ynew = point.x * s + point.y * c;
+
+    // Translate point back to the pivot.
+    point.x = xnew + pivot.x;
+    point.y = ynew + pivot.y;
+    
+    return point;
+}
+
+// Rotates the given triangle around the given pivot point, by the given angle (in rad).
+static inline MyTriangle TriangleRotate(MyTriangle triangle, MyVector2 pivot, double angle)
+{
+    triangle.a = PointRotate(triangle.a, pivot, angle);
+    triangle.b = PointRotate(triangle.b, pivot, angle);
+    triangle.c = PointRotate(triangle.c, pivot, angle);
+    return triangle;
+}
+
 
 // ---------- CENTER OF MASS ---------- //
 
