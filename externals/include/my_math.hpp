@@ -21,16 +21,8 @@ namespace MyMathLib
 
     namespace arithmetic
     {
-        // Trigonometry functions.
-        double cos(double val);
-        double sin(double val);
-        double tan(double val);
-
-        // Square root functions.
-        double sqrt(double val);
-
-        // Fast square root from Quake III.
-
+        // Fast inverse square root from Quake III.
+        float Q_rsqrt(float number);
 
         // Rounds the given value to the nearest int.
         int roundInt(double val);
@@ -98,17 +90,17 @@ namespace MyMathLib
         bool isShape(T object, bool notVector2 = false)
         {
             return ((notVector2 ? false : typeid(T) == typeid(MyVector2))         ||
-                                        typeid(T) == typeid(MySegment)          ||
-                                        typeid(T) == typeid(MyTriangle)         ||
-                                        typeid(T) == typeid(MyRectangle)        ||
-                                        typeid(T) == typeid(MyPolygon)          ||
-                                        typeid(T) == typeid(MyCircle)           ||
+                                          typeid(T) == typeid(MySegment)          ||
+                                          typeid(T) == typeid(MyTriangle)         ||
+                                          typeid(T) == typeid(MyRectangle)        ||
+                                          typeid(T) == typeid(MyPolygon)          ||
+                                          typeid(T) == typeid(MyCircle)           ||
                     (notVector2 ? false : typeid(T) == typeid(const MyVector2&))  ||
-                                        typeid(T) == typeid(const MySegment&)   ||
-                                        typeid(T) == typeid(const MyTriangle&)  ||
-                                        typeid(T) == typeid(const MyRectangle&) ||
-                                        typeid(T) == typeid(const MyPolygon&)   ||
-                                        typeid(T) == typeid(const MyCircle&));
+                                          typeid(T) == typeid(const MySegment&)   ||
+                                          typeid(T) == typeid(const MyTriangle&)  ||
+                                          typeid(T) == typeid(const MyRectangle&) ||
+                                          typeid(T) == typeid(const MyPolygon&)   ||
+                                          typeid(T) == typeid(const MyCircle&));
         }
 
         // Makes sure that the given object is a number.
@@ -122,6 +114,14 @@ namespace MyMathLib
                     typeid(T) == typeid(const float) ||
                     typeid(T) == typeid(const double));
         }
+
+        enum class ShapeTypes {
+            SEGMENT,
+            TRIANGLE,
+            RECTANGLE,
+            POLYGON,
+            CIRCLE,
+        };
 
         // ---------------------- CLASSES --------------------- //
 
@@ -148,16 +148,16 @@ namespace MyMathLib
                 void operator=(const MyVector2& other);
 
                 // Vector2 addition.
-                template <typename T> MyVector2 operator+(const T& val);
+                template <typename T> MyVector2 operator+(const T& val) const;
 
                 // Vector2 substraction.
-                template <typename T> MyVector2 operator-(const T& val);
+                template <typename T> MyVector2 operator-(const T& val) const;
 
                 // Vector2 multiplication.
-                template <typename T> MyVector2 operator*(const T& val);
+                template <typename T> MyVector2 operator*(const T& val) const;
 
                 // Vector2 division.
-                template <typename T> MyVector2 operator/(const T &val);
+                template <typename T> MyVector2 operator/(const T &val) const;
 
                 // Vector2 addition assignement.
                 template <typename T> void operator+=(const T &val);
@@ -172,10 +172,10 @@ namespace MyMathLib
                 template <typename T> void operator/=(const T &val);
 
                 // Vector2 dot product.
-                double operator&(MyVector2 val);
+                double operator&(const MyVector2& val) const;
 
                 // Vector2 cross product.
-                double operator^(MyVector2 val);
+                double operator^(const MyVector2& val) const;
 
                 // ---------- VECTOR2 METHODS ---------- //
                 
@@ -233,12 +233,13 @@ namespace MyMathLib
         {
             public :
                 // Attributes.
-                MyVector2 a, b;
+                MyVector2  a, b;
+                ShapeTypes type = ShapeTypes::SEGMENT;
 
                 // Constructors.
-                MySegment();                                                     // Null segment.
-                MySegment(const MyVector2& new_a, const MyVector2& new_b);       // Segment from points.
-                MySegment(MyVector2& origin, MyVector2& vec, const bool vector); // Segment from point and vector.
+                MySegment();                                                                 // Null segment.
+                MySegment(const MyVector2& new_a,  const MyVector2& new_b);                  // Segment from points.
+                MySegment(const MyVector2& origin, const MyVector2& vec, const bool vector); // Segment from point and vector.
 
                 // Destroyer.
                 ~MySegment();
@@ -269,7 +270,8 @@ namespace MyMathLib
         {
             public:
                 // Attributes.
-                MyVector2 a, b, c;
+                MyVector2  a, b, c;
+                ShapeTypes type = ShapeTypes::TRIANGLE;
 
                 // Constructor.
                 MyTriangle();                                                  // Null triangle.
@@ -304,8 +306,9 @@ namespace MyMathLib
         {        
             public:            
                 // Attributes.
-                MyVector2 origin;
-                double width, height;
+                MyVector2  origin;
+                double     width, height;
+                ShapeTypes type = ShapeTypes::RECTANGLE;
 
                 // Constructor.
                 MyRectangle();                                                          // Null rectangle.
@@ -343,9 +346,10 @@ namespace MyMathLib
         {
         public:
                 // Attributes.
-                MyVector2 origin;
-                double    radius, rotation;
-                int       sides;
+                MyVector2  origin;
+                double     radius, rotation;
+                int        sides;
+                ShapeTypes type = ShapeTypes::POLYGON;
 
                 // Constructor.
                 MyPolygon();                                                                            // Null polygon.
@@ -380,8 +384,10 @@ namespace MyMathLib
         {
             public :
                 // Attributes.
-                MyVector2 origin;
-                double    radius;
+                MyVector2  origin;
+                double     radius;
+                ShapeTypes type = ShapeTypes::CIRCLE;
+
 
                 // Constructor.
                 MyCircle();                                        // Null circle.
@@ -398,8 +404,14 @@ namespace MyMathLib
                 // Returns the number of sides of the circle.
                 int getSidesNum();
 
+                // Does nothing and returns a null segment.
+                MySegment getSide(int index);
+
                 // Returns the number of vertices of the circle.
                 int getVerticesNum();
+
+                // Does nothing and returns a null vector.
+                MyVector2 getVertex(int index);
 
                 // Draws the circle in a raylib window.
                 void draw(Color color);
@@ -414,12 +426,10 @@ namespace MyMathLib
         using namespace geometry;
         
         // Returns the smallest rectangle that contanins the given shape.
-        template <typename T>
-        MyRectangle getBoundingBox(T shape);
+        template <typename T> MyRectangle getBoundingBox(T shape);
 
         // Returns an axis that passes through the center of the given circle and the center of the given shape.
-        template <typename T>
-        MySegment CircleGetAxis(MyCircle circle, T shape);
+        template <typename T> MySegment CircleGetAxis(MyCircle circle, T shape);
 
         // Returns the axis of the given shapes that corresponds to the given index.
         template <typename T1, typename T2>
@@ -435,8 +445,7 @@ namespace MyMathLib
         bool collisionAABB(MyRectangle rec1, MyRectangle rec2);
 
         // Project a shape onto a given axis.
-        template <typename T>
-        MySegment projectShapeOnAxis(MySegment axis, T shape);
+        template <typename T> MySegment projectShapeOnAxis(MySegment axis, T shape);
 
         // Returns true if the given point is colliding with the given segment.
         bool collisionSegmentPoint(MySegment segment, MyVector2 point);
@@ -445,7 +454,6 @@ namespace MyMathLib
         bool collisionProjections(MySegment projection1, MySegment projection2);
 
         // Checks for collision between two given shapes.
-        template <typename T1, typename T2>
-        bool collisionSAT(T1 shape1, T2 shape2);
+        template <typename T1, typename T2> bool collisionSAT(T1 shape1, T2 shape2);
     }
 }

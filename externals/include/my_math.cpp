@@ -4,6 +4,24 @@ using namespace MyMathLib;
 
 // ------------------------------ ARITHMECTIC ------------------------------ //
 
+// Fast inverse square root from Quake III.
+float arithmetic::Q_rsqrt(float number)
+{
+    long i;
+    float x2, y;
+    const float threehalfs = 1.5F;
+
+    x2 = number * 0.5F;
+    y = number;
+    i = * ( long * ) &y; // evil floating point bit level hacking
+    i = 0x5f3759df - ( i >> 1 ); // what the fuck?
+    y = * ( float * ) &i;
+    y = y * ( threehalfs - ( x2 * y * y ) ); // 1st iteration
+//	y = y * ( threehalfs - ( x2 * y * y ) ); // 2nd iteration, this can be removed
+
+    return y;
+}
+
 // Rounds the given value to the nearest int.
 int arithmetic::roundInt(double val)    { return (int)round(val); }
 
@@ -76,7 +94,7 @@ using namespace geometry;
 MyVector2::MyVector2()                                                          : x(0),                 y(0)                 {}; // Null vector.
 MyVector2::MyVector2(const double new_x, const double new_y)                    : x(new_x),             y(new_y)             {}; // Vector with 2 coordinates.
 MyVector2::MyVector2(const MyVector2& p1, const MyVector2& p2)                  : x(p2.x - p1.x),       y(p2.y - p1.y)       {}; // Vector from 2 points.
-MyVector2::MyVector2(const MySegment& seg)                                      : x(seg.b.x - seg.a.x), y(seg.b.y - seg.a.y) {}; // Vector from semgent.
+MyVector2::MyVector2(const MySegment& seg)                                      : x(seg.b.x - seg.a.x), y(seg.b.y - seg.a.y) {}; // Vector from segment.
 MyVector2::MyVector2(const double rad, const double length, const bool isAngle) : x(cos(rad) * length), y(sin(rad) * length) {}; // Vector from angle (useless bool).
 
 // Destroyer.
@@ -87,91 +105,11 @@ MyVector2::~MyVector2() {};
 // Copy constructor.
 void MyVector2::operator=(const MyVector2& other) { x = other.x; y = other.y; }
 
-// Vector2 addition.
-template <typename T>
-MyVector2 MyVector2::operator+(const T& val)
-{
-    assert (typeid(T) == typeid(const MyVector2) || isNumeral(val));
-
-    if (typeid(T) == typeid(const MyVector2)) return MyVector2(x + val.x, y + val.y);
-    // else if (isNumeral(val))                  return MyVector2(x + val,   y + val  );
-
-    return MyVector2(); // Will never happen thanks to the assert.
-}
-
-// Vector2 substraction.
-template <typename T>
-MyVector2 MyVector2::operator-(const T& val)
-{
-    assert (typeid(T) == typeid(const MyVector2) || isNumeral(val));
-
-    if (typeid(T) == typeid(const MyVector2)) return MyVector2(x - val.x, y - val.y);
-    else if (isNumeral(val))                  return MyVector2(x - val,   y - val  );
-
-    return MyVector2(); // Will never happen thanks to the assert.
-}
-
-// Vector2 multiplication.
-template <typename T>
-MyVector2 MyVector2::operator*(const T& val)
-{
-    assert (typeid(T) == typeid(const MyVector2) || isNumeral(val));
-
-    if (typeid(T) == typeid(const MyVector2)) return MyVector2(x * val.x, y * val.y);
-    else if (isNumeral(val))                  return MyVector2(x * val,   y * val  );
-
-    return MyVector2(); // Will never happen thanks to the assert.
-}
-
-// Vector2 division.
-template <typename T>
-MyVector2 MyVector2::operator/(const T& val)
-{
-    assert (typeid(T) == typeid(const MyVector2) || isNumeral(val));
-
-    if (typeid(T) == typeid(const MyVector2)) return MyVector2(x / val.x, y / val.y);
-    else if (isNumeral(val))                  return MyVector2(x / val,   y / val  );
-
-    return MyVector2(); // Will never happen thanks to the assert.
-}
-
-// Vector2 addition assignement.
-template <typename T>
-void MyVector2::operator+=(const T& val)
-{
-    if (typeid(T) == typeid(const MyVector2)) { x += val.x; y += val.y; }
-    else if (isNumeral(val))                  { x += val;   y += val;   }
-}
-
-// Vector2 substraction assignement.
-template<typename T>
-void MyVector2::operator-=(const T& val)
-{
-    if(typeid(T) == typeid(const MyVector2)) { x -= val.x; y -= val.y; }
-    else if (isNumeral(val))                 { x -= val;   y -= val;   }
-}
-
-// Vector2 multiplication assignement.
-template <typename T>
-void MyVector2::operator*=(const T& val)
-{
-    if (typeid(T) == typeid(const MyVector2)) { x *= val.x; y *= val.y; }
-    else if (isNumeral(val))                  { x *= val;   y *= val;   }
-}
-
-// Vector2 division assignement.
-template <typename T>
-void MyVector2::operator/=(const T& val)
-{
-    if (typeid(T) == typeid(const MyVector2)) { x /= val.x; y /= val.y; }
-    else if (isNumeral(val))                  { x /= val;   y /= val;   }
-}
-
 // Vector2 dot product.
-double MyVector2::operator&(MyVector2 val)         { return (x * val.x) + (y * val.y); }
+double MyVector2::operator&(const MyVector2& val) const { return (x * val.x) + (y * val.y); }
 
 // Vector2 cross product.
-double MyVector2::operator^(MyVector2 val)         { return (x * val.y) - (y * val.x); }
+double MyVector2::operator^(const MyVector2& val) const { return (x * val.y) - (y * val.x); }
 
 // ---------- VECTOR2 METHODS ---------- //
 
@@ -243,9 +181,9 @@ Vector2 MyVector2::toRayVec() { return (Vector2){ (float)x, (float)y }; }
 // -------------------- SEGMENT -------------------- //
 
 // Constructors.
-MySegment::MySegment()                                                     : a(MyVector2()), b(MyVector2())   {}; // Null segment.
-MySegment::MySegment(const MyVector2& new_a, const MyVector2& new_b)       : a(new_a),       b(new_b)         {}; // Segment from points.
-MySegment::MySegment(MyVector2& origin, MyVector2& vec, const bool vector) : a(origin),      b(origin + vec)  {}; // Segment from point and vector.
+MySegment::MySegment()                                                                 : a(MyVector2()), b(MyVector2())   {}; // Null segment.
+MySegment::MySegment(const MyVector2& new_a, const MyVector2& new_b)                   : a(new_a),       b(new_b)         {}; // Segment from points.
+MySegment::MySegment(const MyVector2& origin, const MyVector2& vec, const bool vector) : a(origin),      b(origin + vec)  {}; // Segment from point and vector.
 
 // Destroyer.
 MySegment::~MySegment() {};
@@ -475,123 +413,19 @@ MyVector2 MyCircle::getCenterOfMass() { return origin; }
 // Returns the number of sides of the circle.
 int MyCircle::getSidesNum() { return 1; }
 
+// Does nothing and returns a null segment.
+MySegment getSide(int index) { return MySegment(); }
+
 // Returns the number of vertices of the circle.
 int MyCircle::getVerticesNum() { return 0; }
+
+// Does nothing and returns a null vector.
+MyVector2 getVertex(int index) { return MyVector2(); }
 
 // Draws the circle in a raylib window.
 void MyCircle::draw(Color color) { DrawCircleLines(origin.x, origin.y, radius, color); }
 
-
-
-
-
 // ------------------------------ COLLISIONS ------------------------------ //
-
-// Returns the smallest rectangle that contanins the given shape.
-template <typename T> MyRectangle collisions::getBoundingBox(T shape)
-{
-    if (isShape(shape, true))
-    {
-        // If the shape is a circle.
-        if (typeid(T) == typeid(MyCircle))
-        {
-            MyRectangle bounding_box = MyRectangle(shape.data.circle.origin - shape.data.circle.radius, 
-                                                shape.data.circle.radius * 2, 
-                                                shape.data.circle.radius * 2);
-
-            //! Debug render.
-            if (__debug_bounding_boxes) bounding_box.draw(GRAY);
-
-            return bounding_box;
-        }
-
-        // Get the shape's vertices information.
-        int vertices_num = shape.getVerticesNum();
-
-        // Create the min and max values for x and y.
-        MyVector2 vertex = shape.getVertex(0);
-        double xmin      = vertex.x;
-        double xmax      = vertex.x;
-        double ymin      = vertex.y;
-        double ymax      = vertex.y;
-
-        // Loop though the vertices and find the min and max values for x and y.
-        for (int i = 1; i < vertices_num; i++)
-        {
-            vertex = shape.getVertex(i);
-            if (vertex.x <= xmin) xmin = vertex.x;
-            if (vertex.x >= xmax) xmax = vertex.x;
-            if (vertex.y <= ymin) ymin = vertex.y;
-            if (vertex.y >= ymax) ymax = vertex.y;
-        }
-
-        // Create the shape's bounding box.
-        MyRectangle bounding_box = MyRectangle(MyVector2(xmin, ymin), xmax - xmin, ymax - ymin);
-
-        //! Debug render.
-        if (__debug_bounding_boxes) bounding_box.draw(GRAY);
-
-        return bounding_box;
-    }
-}
-
-// Returns an axis that passes through the center of the given circle and the center of the given shape.
-template <typename T>
-MySegment collisions::CircleGetAxis(MyCircle circle, T shape)
-{
-    if (isShape(shape, true))
-    {
-        // Make a segment that starts at the center of the circle, goes in the direction of the center of the shape and is of length 1.
-        return MySegment(circle.origin, MyVector2(circle.origin, shape.getCenterOfMass()).normalize(), true);
-    }
-}
-
-// Returns the axis of the given shapes that corresponds to the given index.
-template <typename T1, typename T2>
-MySegment collisions::ShapesGetAxis(T1 shape1, T2 shape2, int index)
-{
-    if (isShape(shape1, true) && isShape(shape2, true))
-    {
-        assert (0 <= index && index < shape1.getSidesNum() + shape2.getSidesNum());
-
-        MySegment side;
-        MySegment axis;
-
-        // If the given index refers to an axis of the first shape...
-        if (index < shape1.getSidesNum())
-        {
-            // If the first shape is not a circle, get the side pointed to by the index and calculate its normal.
-            if (typeid(T1) != typeid(MyCircle)) {
-                side = shape1.ShapeGetSide(index);
-                axis = MySegment(side.getCenterOfMass(),
-                                    MyVector2(side).getNormalized().getNormal(),
-                                    true);
-            }
-            // If the first shape is a circle, get its axis.
-            else
-                axis = CircleGetAxis(shape1, shape2);
-        }
-        // If the given index refers to an axis of the second shape...
-        else
-        {
-            // If the second shape is not a circle, get the side pointed to by the index and calculate its normal.
-            if (typeid(T2) != typeid(MyCircle)) {
-                side = shape2.getSide(index - getSidesNum(shape1));
-                axis = MySegment(side.getCenterOfMass(),
-                                    MyVector2(side).getNormalized().getNormal(),
-                                    true);
-            }
-            // If the second shape is a circle, get its axis.
-            else
-                axis = CircleGetAxis(shape2.data.circle, shape1);
-        }
-
-        //! Debug render.
-        if (__debug_axes) (MyVector2(axis) * 100).draw(axis.a, BLUE);
-
-        return axis;
-    }
-}
 
 // Returns true if the given point is colliding with the given circle.
 bool collisions::collisionCirclePoint(MyCircle c, MyVector2 p) { return (c.origin.getDistanceFromPoint(p) <= c.radius ? true : false); }
@@ -606,88 +440,6 @@ bool collisions::collisionAABB(MyRectangle rec1, MyRectangle rec2)
             rec1.origin.x               <= rec2.origin.x + rec2.width &&
             rec1.origin.y + rec1.height >= rec2.origin.y              &&
             rec1.origin.y               <= rec2.origin.y + rec2.height);
-}
-
-// Project a shape onto a given axis.
-template <typename T>
-MySegment collisions::projectShapeOnAxis(MySegment axis, T shape)
-{
-    if (isShape(shape, true))
-    {
-        // Get the axis' vector.
-        MyVector2 axis_vec = MyVector2(axis);
-
-        // Handle circles.
-        if (typeid(T) == typeid(MyCircle))
-        {
-            // Project the circle's origin onto the axis.
-            MyVector2 origin_projection = axis.a + axis_vec * (MyVector2(axis.a, shape.origin) & axis_vec);
-
-            // Create a segment of the circle's projection.
-            MySegment circle_projection = MySegment(origin_projection - axis_vec * shape.radius,
-                                                    origin_projection + axis_vec * shape.radius);
-
-            //! Debug render.
-            if (__debug_points)
-            {
-                shape.origin.drawAsPoint(WHITE);
-                circle_projection.a.drawAsPoint(SKYBLUE);
-                circle_projection.b.drawAsPoint(BLUE);
-            }
-            if (__debug_projections) circle_projection.draw(ORANGE);
-            
-            return circle_projection;
-        }
-
-        //* https://fr.wikipedia.org/wiki/Projection_orthogonale#Projet%C3%A9_orthogonal_sur_une_droite,_distance
-
-        // Get all the vertices of the shape.
-        int vertices_num = shape.getVerticesNum();
-        MyVector2 vertex;
-        MyVector2 projected_points[vertices_num];
-
-        // Loop over the vertices of the shape and get their projections onto the axis.
-        for (int i = 0; i < vertices_num; i++)
-        {
-            vertex = shape.getVertex(i);
-            projected_points[i] = axis.a + axis_vec * (MyVector2(axis.a, vertex) & axis_vec);
-
-            //! Debug render.
-            if (__debug_points) projected_points[i].drawAsPoint(WHITE);
-        }
-
-        // Find the closest and farthest points from the axis origin.
-        MyVector2 min_point = projected_points[0];
-        MyVector2 max_point = min_point;
-
-        for (int i = 0; i < vertices_num; i++)
-        {
-            if (projected_points[i].getCopiedSign(axis_vec).x > max_point.getCopiedSign(axis_vec).x ||
-                projected_points[i].getCopiedSign(axis_vec).y > max_point.getCopiedSign(axis_vec).y)
-            {
-                max_point = projected_points[i];
-            }
-
-            if (projected_points[i].getCopiedSign(axis_vec).x < min_point.getCopiedSign(axis_vec).x ||
-                projected_points[i].getCopiedSign(axis_vec).y < min_point.getCopiedSign(axis_vec).y)
-            {
-                min_point = projected_points[i];
-            }
-        }
-
-        MyVector2 axis_orig_to_min_point = MyVector2(axis.a, min_point);
-        MySegment projection = MySegment(axis.a + axis_orig_to_min_point, MyVector2(min_point, max_point), true);
-
-        //! Debug render.
-        if (__debug_points)
-        {
-            min_point.drawAsPoint(SKYBLUE);
-            max_point.drawAsPoint(BLUE);
-        }
-        if (__debug_projections) projection.draw(ORANGE);
-
-        return projection;
-    }
 }
 
 // Returns true if the given point is colliding with the given segment.
@@ -711,59 +463,4 @@ bool collisions::collisionProjections(MySegment projection1, MySegment projectio
             collisionSegmentPoint(projection1, projection2.b) ||
             collisionSegmentPoint(projection2, projection1.a) ||
             collisionSegmentPoint(projection2, projection1.b));
-}
-
-// Checks for collision between two given shapes.
-template<typename T1, typename T2>
-bool collisions::collisionSAT(T1 shape1, T2 shape2)
-{
-    if (isShape(shape1, true) && isShape(shape2, true))
-    {
-        // If both shapes are circles, don't use SAT.
-        if (typeid(T1) == typeid(MyCircle) && 
-            typeid(T2) == typeid(MyCircle))
-            return collisionCircles(shape1, shape2);
-
-        // If both shapes are rectangles, don't use SAT.
-        else if (typeid(T1) == typeid(MyRectangle) && 
-                    typeid(T2) == typeid(MyRectangle))
-            return collisionAABB(shape1, shape2);
-
-        // Check for collisions on the shapes' bounding boxes to not have to check if they are not in collision.
-        else if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
-        {
-            // Get the number of sides of both shapes.
-            int sides = shape1.getSidesNum() + shape2.getSidesNum();
-
-            // Loop over all of the axes.
-            for (int i = 0; i < sides; i++)
-            {
-                // Project both shapes onto the axis.
-                MySegment projection1 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
-                MySegment projection2 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
-
-                // If the projections don't overlap, the shapes are not in collision.
-                if (!collisionProjections(projection1, projection2))
-                {
-                    //! Debug render.
-                    if (__debug_failed_projections)
-                    {
-                        projection1.draw(PINK); 
-                        projection2.draw(PINK);
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        //! Debug render.
-        if (__debug_shapes)
-        {
-            shape1.draw(GREEN); 
-            shape2.draw(GREEN);
-        }
-    }
-
-    return false;
 }

@@ -1,5 +1,7 @@
+#pragma once
 #include <iostream>
 #include <my_math.hpp>
+#include <my_math.inl>
 
 using namespace MyMathLib::collisions;
 
@@ -45,55 +47,36 @@ int main(void)
         // ------- UPDATE ------- //
 
         // Switch shape.
-        if (IsKeyPressed(KEY_SPACE))
-            current_shape = !current_shape;
+        if (IsKeyPressed(KEY_SPACE)) current_shape = !current_shape;
         // Move shape.
-        if (IsKeyDown(KEY_W))
-            y[current_shape] -= 2;
-        if (IsKeyDown(KEY_S))
-            y[current_shape] += 2;
-        if (IsKeyDown(KEY_D))
-            x[current_shape] += 2;
-        if (IsKeyDown(KEY_A))
-            x[current_shape] -= 2;
+        if (IsKeyDown(KEY_W)) y[current_shape] -= 2;
+        if (IsKeyDown(KEY_S)) y[current_shape] += 2;
+        if (IsKeyDown(KEY_D)) x[current_shape] += 2;
+        if (IsKeyDown(KEY_A)) x[current_shape] -= 2;
         // Change side number.
-        if (IsKeyPressed(KEY_KP_ADD) && sides[current_shape] < 360)
-            sides[current_shape]++;
-        if (IsKeyPressed(KEY_KP_SUBTRACT) && sides[current_shape] > 3)
-            sides[current_shape]--;
+        if (IsKeyPressed(KEY_KP_ADD) && sides[current_shape] < 360)    sides[current_shape]++;
+        if (IsKeyPressed(KEY_KP_SUBTRACT) && sides[current_shape] > 3) sides[current_shape]--;
         // Change size.
-        if (IsKeyDown(KEY_KP_5) && sizes[current_shape] <= 1000)
-            sizes[current_shape] += 5;
-        if (IsKeyDown(KEY_KP_4) && sizes[current_shape] > 10)
-            sizes[current_shape] -= 5;
+        if (IsKeyDown(KEY_KP_5) && sizes[current_shape] <= 1000)       sizes[current_shape] += 5;
+        if (IsKeyDown(KEY_KP_4) && sizes[current_shape] > 10)          sizes[current_shape] -= 5;
         // Rotate.
-        if (IsKeyDown(KEY_KP_2))
-            rotations[current_shape] += PI / sizes[current_shape];
-        if (IsKeyDown(KEY_KP_1))
-            rotations[current_shape] -= PI / sizes[current_shape];
+        if (IsKeyDown(KEY_KP_2))                                       rotations[current_shape] += PI / sizes[current_shape];
+        if (IsKeyDown(KEY_KP_1))                                       rotations[current_shape] -= PI / sizes[current_shape];
         // Circle button.
-        if (IsKeyPressed(KEY_KP_8))
-            sides[current_shape] = 360;
-        if (IsKeyPressed(KEY_KP_7))
-            sides[current_shape] = 3;
+        if (IsKeyPressed(KEY_KP_8))                                    sides[current_shape] = 360;
+        if (IsKeyPressed(KEY_KP_7))                                    sides[current_shape] = 3;
         // Show/hide shapes.
-        if (IsKeyPressed(KEY_KP_DECIMAL))
-            __debug_shapes = !__debug_shapes;
+        if (IsKeyPressed(KEY_KP_DECIMAL))  __debug_shapes = !__debug_shapes;
         // Show/hide bounding boxes.
-        if (IsKeyPressed(KEY_KP_3))
-            __debug_bounding_boxes = !__debug_bounding_boxes;
+        if (IsKeyPressed(KEY_KP_3))        __debug_bounding_boxes = !__debug_bounding_boxes;
         // Show/hide axes.
-        if (IsKeyPressed(KEY_KP_6))
-            __debug_axes = !__debug_axes;
+        if (IsKeyPressed(KEY_KP_6))        __debug_axes = !__debug_axes;
         // Show/hide projections.
-        if (IsKeyPressed(KEY_KP_9))
-            __debug_projections = !__debug_projections;
+        if (IsKeyPressed(KEY_KP_9))        __debug_projections = !__debug_projections;
         // Show/hide failed projections.
-        if (IsKeyPressed(KEY_KP_MULTIPLY))
-            __debug_failed_projections = !__debug_failed_projections;
+        if (IsKeyPressed(KEY_KP_MULTIPLY)) __debug_failed_projections = !__debug_failed_projections;
         // Show/hide projected points.
-        if (IsKeyPressed(KEY_KP_ENTER))
-            __debug_points = !__debug_points;
+        if (IsKeyPressed(KEY_KP_ENTER))    __debug_points = !__debug_points;
 
 
         // ------- DISPLAY ------- //
