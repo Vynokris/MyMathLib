@@ -3,6 +3,7 @@
 #include <my_math.hpp>
 #include <my_math.inl>
 
+using namespace MyMathLib::arithmetic;
 using namespace MyMathLib::collisions;
 
 
@@ -40,6 +41,19 @@ int main(void)
 
     MySegment segment = MySegment(MyVector2(100, GetScreenHeight() - 200), 
                                   MyVector2(300, GetScreenHeight() - 100));
+
+    //! DEBUG SANDBOX: MATRIX ========================
+    
+    MyMatrix<float> m0(2,3);
+    m0.setMatrixValue(0,0,2.3);
+    m0.setMatrixValue(0,1,4.5);
+    m0.setMatrixValue(1,0,3.6);
+    m0.setMatrixValue(1,1,6.8);
+    m0.print();
+    std::cout << "IsSquare: " << m0.isSquare() << " IsIdentity: " << m0.isIdentity() << std::endl;
+
+    //!===============================================
+
 
     // ---------- GAME LOOP ---------- //
     while (!WindowShouldClose())

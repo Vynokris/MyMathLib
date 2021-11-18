@@ -1,4 +1,4 @@
-CFLAGS=-O0 -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
+CFLAGS=-O0 -g #-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
 CPPFLAGS= -Iexternals/include
 LDLIBS=-lraylib -lm -ldl -lpthread
 LDFLAGS=-Lexternals/libs

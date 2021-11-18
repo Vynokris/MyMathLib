@@ -1,11 +1,6 @@
 To fix:
-- Type comparaison issue
+- Warning -Wdepecated-copy (remove commentary in Makefile)
 
-
-New features:
-
-- Arithmetics:
-    - cos, sin, tan, sqrt
-    - Vector3 & Vector4 (if Vector2 is working well)
-
-- Physics
+To do:
+    Matrix
+    Spline curves (https://fr.wikipedia.org/wiki/Spline https://en.wikipedia.org/wiki/Spline_interpolation)

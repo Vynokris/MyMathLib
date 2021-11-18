@@ -4,6 +4,8 @@ using namespace MyMathLib;
 
 // ------------------------------ ARITHMECTIC ------------------------------ //
 
+// --------- ARITHMETIC FUNCTIONS -------- //
+
 // Fast inverse square root from Quake III.
 float arithmetic::Q_rsqrt(float number)
 {
@@ -80,13 +82,9 @@ int arithmetic::getRandomValue(int start, int end)
     return r;
 }
 
-
-
 // ------------------------------ GEOMETRY ------------------------------ //
 
-
-
-// -------------------- VECTOR 2 -------------------- //
+// --------------- VECTOR 2 -------------- //
 
 using namespace geometry;
 
@@ -111,7 +109,7 @@ double MyVector2::operator&(const MyVector2& val) const { return (x * val.x) + (
 // Vector2 cross product.
 double MyVector2::operator^(const MyVector2& val) const { return (x * val.y) - (y * val.x); }
 
-// ---------- VECTOR2 METHODS ---------- //
+// ------------ VECTOR2 METHODS ----------- //
 
 // Returns the length of the given vector.
 double MyVector2::getLength()                              { return sqrt(arithmetic::sqpow(x) + arithmetic::sqpow(y)); }
@@ -188,7 +186,7 @@ MySegment::MySegment(const MyVector2& origin, const MyVector2& vec, const bool v
 // Destroyer.
 MySegment::~MySegment() {};
 
-// ---------- SEGMENT METHODS ---------- //
+// ---------------- SEGMENT METHODS --------------- //
 
 // Returns the center of mass of the segment.
 MyVector2 MySegment::getCenterOfMass()
