@@ -58,6 +58,15 @@ namespace MyMathLib
         // Remaps the given value from one range to another.
         double remap(double val, double inputStart, double inputEnd, double outputStart, double outputEnd);
 
+        // Returns true if the given number is a power of 2.
+        bool is_power_of_two(int val);
+
+        // Returns the closest power of 2 that is inferior or equal to val.
+        int get_power_of_two_under(int val);
+
+        // Returns the closest power of 2 that is superior or equal to val.
+        int get_power_of_two_above(int val);
+
         // Return a random integer according to a seed and a state
         int32_t getNextRandomNumber(int32_t state);
 

@@ -66,6 +66,25 @@ double arithmetic::remap(double val, double inputStart, double inputEnd, double 
     return outputStart + (val - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
 }
 
+// Returns true if the given number is a power of 2.
+bool arithmetic::is_power_of_two(int val)
+{
+    return val == (int)pow(2, (int)(log(val)/log(2)));
+}
+
+// Returns the closest power of 2 that is inferior or equal to val.
+int arithmetic::get_power_of_two_under(int val)
+{
+    return (int)pow(2, (int)(log(val)/log(2)));
+}
+
+// Returns the closest power of 2 that is superior or equal to val.
+int arithmetic::get_power_of_two_above(int val)
+{
+    if (is_power_of_two(val)) return (int)pow(2, (int)(log(val)/log(2)));
+    else                      return (int)pow(2, (int)(log(val)/log(2)) + 1);
+}
+
 // Return a random integer according to a seed and a state
 int32_t arithmetic::getNextRandomNumber(int32_t state)
 {
