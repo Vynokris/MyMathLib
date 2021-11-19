@@ -1,6 +1,6 @@
 To fix:
-- Warning -Wdepecated-copy (remove commentary in Makefile)
+- Remaining errors
 
 To do:
-    Matrix
+    Matrix determinant
     Spline curves (https://fr.wikipedia.org/wiki/Spline https://en.wikipedia.org/wiki/Spline_interpolation)

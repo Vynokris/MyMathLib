@@ -66,160 +66,199 @@ namespace MyMathLib
 
         // ---------------- MATRIX ---------------- //
 
-        // Matrix Class 
+        // Matrix class 
         // (Web docs: https://www.bestprog.net/en/2019/08/23/c-an-example-of-creating-a-template-class-matrix-dynamic-memory-allocation/)
-        template<typename T>
+        template<typename T, int W, int H>
         class MyMatrix
         {
             private:
-                T** matrix;
-                int rows;
-                int columns;
+                T   matrix[W][H];
 
             public:
-                // Constructors / Destructors.
-                MyMatrix() { rows = columns = 0; matrix = nullptr; }
+                // ----- Constructors & Destructor ----- //
+                MyMatrix() { assert(W >= 2 && H >= 2); }
+                MyMatrix(const MyMatrix<T,W,H>& _matrix) { assert(W >= 2 && H >= 2); for (int i = 0; i < W; i++) for (int j = 0; j < H; j++) matrix[i][j] = _matrix[i][j]; }
+                ~MyMatrix() {}
 
-                MyMatrix(int _rows, int _columns)
+                // ----- Methods ----- //
+
+                // Getters.
+                int getRows()                    { return W;            }
+                int getColumns()                 { return H;            }  
+                T   getMatrixValue(int i, int j) { return matrix[i][j]; }
+
+                // Arithmetic.
+                bool isSquare() { return W == H; }
+
+                bool isIdentity()
                 {
-                    // Matrix data initialization
-                    columns =  _rows;
-                    rows    =  _columns;
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            if ((i != j && matrix[i][j] != 0) || (i == j && matrix[i][j] != 1))
+                                return false;
+                    return true;
+                }
+
+                //todo Determinant
+
+                // ----- Others ----- //
+                void print()
+                {
+                    // Print data
+                    std::cout << "MyMatrix (" << &matrix << ") | R: " << W << " C: " << H << std::endl;
                     
-                    // Rows dynamic allocation
-                    matrix = (T**) new T*[rows];
-
-                    // Columns dynamic allocation
-                    for(int i = 0; i < rows; i++) matrix[i] = (T*) new T[columns];
-
-                    // Matrix initialization to zero
-                    for (int i = 0; i < rows; i++) 
-                        for (int j = 0; j < columns; j++) 
-                            matrix[i][j] = 0;
+                    // Print content
+                    for (int i = 0; i < W; i++)
+                    {
+                        for (int j = 0; j < H; j++) std::cout << (j == 0 ? "| " : "") << matrix[i][j] << " | ";
+                        std::cout << std::endl;
+                    }
                 }
 
-                MyMatrix(const MyMatrix &_matrix)
+                // ----- Operators ----- //
+
+                // Matrix bracket operators.
+                T* operator[](int index) { return matrix[index]; }
+
+                // Matrix copy.
+                MyMatrix<T,W,H> operator=(const MyMatrix<T,W,H>& _matrix) const
                 {
-                    // Matrix data initialization
-                    columns  = _matrix.getColumns();
-                    rows     = _matrix.getRows();
-                    
-                    // Rows dynamic allocation
-                    matrix = (T**) new T*[rows];
-
-                    // Columns dynamic allocation
-                    for (int i = 0; i < rows; i++) matrix[i] = (T*) new T[columns];
-
                     // Matrix content copy
-                    for (int i = 0; i < rows; i++) 
-                        for (int j = 0; j < columns; j++)
-                            matrix[i][j] = _matrix[i][j];
-                }
-
-                ~MyMatrix()
-                {
-                    if (columns > 0) for (int i = 0; i < rows; i++) delete[] matrix[i];
-                    if (rows > 0) delete[] matrix;
-                }
-
-
-                // Operators.
-                MyMatrix operator=(const MyMatrix& _matrix) const
-                {
-                    // Free memory previously allocated
-                    if (columns > 0) for (int i = 0; i < rows; i++) delete[] matrix[i];
-                    if (rows > 0) delete[] matrix;
-
-                    // Copy data
-                    columns = _matrix.getColumns();
-                    rows     = _matrix.getRows();
-
-                    // Rows dynamic allocation
-                    matrix = (T**) new T*[rows];
-
-                    // Columns dynamic allocation
-                    for (int i = 0; i < rows; i++) matrix[i] = (T*) new T[columns];
-
-                    // Matrix content copy
-                    for (int i = 0; i < rows; i++) 
-                        for (int j = 0; j < columns; j++)
+                    for (int i = 0; i < W; i++) 
+                        for (int j = 0; j < H; j++)
                             matrix[i][j] = _matrix[i][j];
                     
                     return *this;
                 }
 
                 // Matrix addition.
-                template <typename T> MyMatrix operator+(const T& val) const;
+                MyMatrix<T,W,H> operator+(const T& val) const
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] += val;
+                    return matrix;
+                }
+
+                template<int _W, int _H>
+                MyMatrix<T,W,H> operator+(const MyMatrix<T,_W,_H>& _matrix) const
+                {
+                    assert(W == _W && H == _H); // Matrix must have the same dimension
+                    for(int i = 0; i < W; i++)
+                        for(int j = 0; j < H; j++)
+                            matrix[i][j] += _matrix[i][j];
+                    return matrix;
+                }
 
                 // Matrix substraction.
-                template <typename T> MyMatrix operator-(const T& val) const;
+                MyMatrix<T,W,H> operator-(const T& val) const
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] -= val;
+                    return matrix;
+                }
+
+                template<int _W, int _H>
+                MyMatrix<T,W,H> operator-(const MyMatrix<T,_W,_H>& _matrix) const
+                {
+                    assert(W == _W && H == _H);
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] -= _matrix[i][j];
+                    return matrix;
+                }
+
 
                 // Matrix multiplication.
-                template <typename T> MyMatrix operator*(const T& val) const;
+                MyMatrix<T,W,H> operator*(const T& val) const;
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] *= val;
+                    return matrix;
+                }
 
-                // Matrix division.
-                template <typename T> MyMatrix operator/(const T &val) const;
+                template<int _W, int _H>
+                MyMatrix<T,W,H> operator*(const MyMatrix<T,_W,_H>& _matrix) const
+                {
+                    assert(H == _W); // Size condition to calculate
+    
+                    MyMatrix<T, (W > _W ? W : _W),(H > _H ? H : _H)> result;
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < _H; j++)
+                        {
+                            result[i][j] = 0;
+                            for (int k = 0; k < H; k++) result[i][j] = matrix[i][k] + _matrix[k][j];
+                        }
+                    return result;
+                }
+
+                // Matrix division by a scalar.
+                MyMatrix<T,W,H> operator/(const T& val) const
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] /= val;
+                    return matrix;
+                }
 
                 // Matrix addition assignement.
-                template <typename T> void operator+=(const T &val);
+                void operator+=(const T &val)
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] += val;
+                }
+
+                template<int _W, int _H>
+                void operator+=(const MyMatrix<T,_W,_H>& _matrix)
+                {
+                    assert(W == _W && H == _H);
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] += _matrix[i][j];
+                }
 
                 // Matrix substraction assignement.
-                template <typename T> void operator-=(const T &val);
+                void operator-=(const T &val)
+                {
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] -= val;
+                }
+
+                template<int _W, int _H>
+                void operator-=(const MyMatrix<T,_W,_H>& _matrix)
+                {
+                    assert(W == _W && H == _H);
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] -= _matrix[i][j];
+                }
 
                 // Matrix multiplication assignement.
-                template <typename T> void operator*=(const T &val);
-
-                // Matrix division assignement.
-                template <typename T> void operator/=(const T &val);
-
-                // Matrix dot product.
-                double operator&(const MyMatrix& val) const;
-
-                // Matrix cross product.
-                double operator^(const MyMatrix& val) const;
-
-                // Methods.
-
-                // Getters.
-                int getRows()                               { return rows;         }
-                int getColumns()                            { return columns;      }
-                T   getMatrixValue(int i, int j)            { return matrix[i][j]; }
-
-                // Setters.
-                void setMatrixValue(int i, int j, T value) { matrix[i][j] = value; }
-
-                // Arithmetic.
-                bool isSquare()
+                void operator*=(const T &val)
                 {
-                    if (rows == columns) return true;
-                    else                 return false;
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
+                            matrix[i][j] *= val;
                 }
 
-                bool isIdentity()
+                template<int _W, int _H>
+                void operator*=(const MyMatrix<T,_W,_H>& _matrix)
                 {
-                    for(int i = 0; i < rows; i++)
-                        for(int j = 0; j < columns; j++)
-                            if ((i != j && matrix[i][j] != 0) || (i == j && matrix[i][j] != 1))
-                                return false;
-                    return true;
-                }
+                    assert(H == _W); // Size condition to calculate
 
-                // Others.
-                void print()
-                {
-                    // Print data
-                    std::cout << "MyMatrix (" << &matrix << ") | R: " << rows << " C: " << columns << std::endl;
-                    
-                    // Print content
-                    for (int i = 0; i < rows; i++)
-                    {
-                        for (int j = 0; j < columns; j++)
+                    MyMatrix<T, (W > _W ? W : _W),(H > _H ? H : _H())> result;
+                    for (int i = 0; i < W; i++)
+                        for (int j = 0; j < H; j++)
                         {
-                            std::cout << (j == 0 ? "| " : "") << matrix[i][j] << " | ";
+                            result[i][j] = 0;
+                            for (int k = 0; k < H; k++) result[i][j] = matrix[i][k] + _matrix[k][j];
                         }
-                        std::cout << std::endl;
-                    }
                 }
+
         };
     }
 
