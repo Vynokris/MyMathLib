@@ -1,4 +1,3 @@
-#pragma once
 #include <iostream>
 #include <my_math.hpp>
 #include <my_math.inl>
@@ -44,12 +43,29 @@ int main(void)
 
     //! DEBUG SANDBOX: MATRIX ========================
     
-    MyMatrix<float> m0(2,3);
-    m0.setMatrixValue(0,0,2.3);
-    m0.setMatrixValue(0,1,4.5);
-    m0.setMatrixValue(1,0,3.6);
-    m0.setMatrixValue(1,1,6.8);
+    MyMatrix<int,4,4> m0;
+    m0.setMatrixValues({
+        7,5,9,1,
+        8,6,2,4,
+        8,8,2,6,
+        8,8,2,6
+    });
+
     m0.print();
+
+    MyMatrix<int,4,4> m1;
+    m1.setMatrixValues({
+        7,5,9,1,
+        8,6,2,4,
+        8,8,2,6,
+        8,8,2,6
+    });
+
+    m1.print();
+
+    MyMatrix<int,4,4> m2 = m0 * m1;
+
+    m2.print();
     std::cout << "IsSquare: " << m0.isSquare() << " IsIdentity: " << m0.isIdentity() << std::endl;
 
     //!===============================================

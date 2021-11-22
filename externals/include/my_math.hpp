@@ -12,6 +12,8 @@
 #include <cassert>
 #include <stdint.h>
 #include <typeinfo>
+#include <cstdarg>
+#include <vector>
 #include <iostream> //! DEBUG
 
 using namespace std;
@@ -77,195 +79,217 @@ namespace MyMathLib
 
         // Matrix class 
         // (Web docs: https://www.bestprog.net/en/2019/08/23/c-an-example-of-creating-a-template-class-matrix-dynamic-memory-allocation/)
-        template<typename T, int W, int H>
+        template<typename T, int R, int C>
         class MyMatrix
         {
             private:
-                T   matrix[W][H];
+                T   matrix[R][C];
 
             public:
                 // ----- Constructors & Destructor ----- //
-                MyMatrix() { assert(W >= 2 && H >= 2); }
-                MyMatrix(const MyMatrix<T,W,H>& _matrix) { assert(W >= 2 && H >= 2); for (int i = 0; i < W; i++) for (int j = 0; j < H; j++) matrix[i][j] = _matrix[i][j]; }
+                MyMatrix() { assert(R >= 2 && C >= 2); }
+                MyMatrix(const MyMatrix<T,R,C>& _matrix) { assert(R >= 2 && C >= 2); for (int i = 0; i < R; i++) for (int j = 0; j < C; j++) matrix[i][j] = _matrix[i][j]; }
                 ~MyMatrix() {}
 
                 // ----- Methods ----- //
 
                 // Getters.
-                int getRows()                    { return W;            }
-                int getColumns()                 { return H;            }  
+                int getRows()                    { return R;            }
+                int getColumns()                 { return C;            }  
                 T   getMatrixValue(int i, int j) { return matrix[i][j]; }
 
+                // Setters.
+                void setMatrixValues(std::initializer_list<T> inputs)
+                {
+                    vector<T> list = inputs;
+                    assert(list.size() == R * C);
+                    int tmp = 0;
+
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                        {
+                            matrix[i][j] = list[tmp];
+                            tmp++;
+                        }
+                }
+
                 // Arithmetic.
-                bool isSquare() { return W == H; }
+                bool isSquare() { return R == C; }
 
                 bool isIdentity()
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             if ((i != j && matrix[i][j] != 0) || (i == j && matrix[i][j] != 1))
                                 return false;
                     return true;
                 }
 
-                //todo Determinant
-
-                // ----- Others ----- //
-                void print()
-                {
-                    // Print data
-                    std::cout << "MyMatrix (" << &matrix << ") | R: " << W << " C: " << H << std::endl;
-                    
-                    // Print content
-                    for (int i = 0; i < W; i++)
-                    {
-                        for (int j = 0; j < H; j++) std::cout << (j == 0 ? "| " : "") << matrix[i][j] << " | ";
-                        std::cout << std::endl;
-                    }
-                }
-
                 // ----- Operators ----- //
 
                 // Matrix bracket operators.
-                T* operator[](int index) { return matrix[index]; }
+                      T* operator[](int index)       { return matrix[index]; }
+                const T* operator[](int index) const { return matrix[index]; }
 
                 // Matrix copy.
-                MyMatrix<T,W,H> operator=(const MyMatrix<T,W,H>& _matrix) const
+                MyMatrix<T,R,C> operator=(const MyMatrix<T,R,C>& _matrix) const
                 {
                     // Matrix content copy
-                    for (int i = 0; i < W; i++) 
-                        for (int j = 0; j < H; j++)
+                    for (int i = 0; i < R; i++) 
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] = _matrix[i][j];
                     
                     return *this;
                 }
 
                 // Matrix addition.
-                MyMatrix<T,W,H> operator+(const T& val) const
+                MyMatrix<T,R,C> operator+(const T& val) const
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
-                            matrix[i][j] += val;
-                    return matrix;
+                    MyMatrix<T,R,C> tmp;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] + val;
+                    return tmp;
                 }
 
-                template<int _W, int _H>
-                MyMatrix<T,W,H> operator+(const MyMatrix<T,_W,_H>& _matrix) const
+                template<int _R, int _C>
+                MyMatrix<T,R,C> operator+(const MyMatrix<T,_R,_C>& _matrix) const
                 {
-                    assert(W == _W && H == _H); // Matrix must have the same dimension
-                    for(int i = 0; i < W; i++)
-                        for(int j = 0; j < H; j++)
-                            matrix[i][j] += _matrix[i][j];
-                    return matrix;
+                    assert(R == _R && C == _C); // Matrix must have the same dimension
+                    MyMatrix<T,_R,_C> tmp;
+                    for(int i = 0; i < R; i++)
+                        for(int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] + _matrix[i][j];
+                    return tmp;
                 }
 
                 // Matrix substraction.
-                MyMatrix<T,W,H> operator-(const T& val) const
+                MyMatrix<T,R,C> operator-(const T& val) const
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
-                            matrix[i][j] -= val;
-                    return matrix;
+                    MyMatrix<T,R,C> tmp;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] - val;
+                    return tmp;
                 }
 
-                template<int _W, int _H>
-                MyMatrix<T,W,H> operator-(const MyMatrix<T,_W,_H>& _matrix) const
+                template<int _R, int _C>
+                MyMatrix<T,R,C> operator-(const MyMatrix<T,_R,_C>& _matrix) const
                 {
-                    assert(W == _W && H == _H);
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
-                            matrix[i][j] -= _matrix[i][j];
-                    return matrix;
+                    assert(R == _R && C == _C);
+                    MyMatrix<T,_R,_C> tmp;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] - _matrix[i][j];
+                    return tmp;
                 }
 
 
                 // Matrix multiplication.
-                MyMatrix<T,W,H> operator*(const T& val) const;
+                MyMatrix<T,R,C> operator*(const T& val) const
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
-                            matrix[i][j] *= val;
-                    return matrix;
+                    MyMatrix<T,R,C> tmp;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] * val;
+                    return tmp;
                 }
 
-                template<int _W, int _H>
-                MyMatrix<T,W,H> operator*(const MyMatrix<T,_W,_H>& _matrix) const
+                template<int _R, int _C>
+                MyMatrix<T, (R > _R ? R : _R),(C > _C ? C : _C)> operator*(const MyMatrix<T,_R,_C>& _matrix) const
                 {
-                    assert(H == _W); // Size condition to calculate
+                    assert(C == _R); // Size condition to calculate
     
-                    MyMatrix<T, (W > _W ? W : _W),(H > _H ? H : _H)> result;
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < _H; j++)
+                    MyMatrix<T, (R > _R ? R : _R),(C > _C ? C : _C)> result;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < _C; j++)
                         {
                             result[i][j] = 0;
-                            for (int k = 0; k < H; k++) result[i][j] = matrix[i][k] + _matrix[k][j];
+                            for (int k = 0; k < C; k++) {
+                                result[i][j] = matrix[i][k] + _matrix[k][j];
+                            }
                         }
                     return result;
                 }
 
                 // Matrix division by a scalar.
-                MyMatrix<T,W,H> operator/(const T& val) const
+                MyMatrix<T,R,C> operator/(const T& val) const
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
-                            matrix[i][j] /= val;
+                    MyMatrix<T,R,C> tmp;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
+                            tmp[i][j] = matrix[i][j] / val;
                     return matrix;
                 }
 
                 // Matrix addition assignement.
                 void operator+=(const T &val)
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] += val;
                 }
 
-                template<int _W, int _H>
-                void operator+=(const MyMatrix<T,_W,_H>& _matrix)
+                template<int _R, int _C>
+                void operator+=(const MyMatrix<T,_R,_C>& _matrix)
                 {
-                    assert(W == _W && H == _H);
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    assert(R == _R && C == _C);
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] += _matrix[i][j];
                 }
 
                 // Matrix substraction assignement.
                 void operator-=(const T &val)
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] -= val;
                 }
 
-                template<int _W, int _H>
-                void operator-=(const MyMatrix<T,_W,_H>& _matrix)
+                template<int _R, int _C>
+                void operator-=(const MyMatrix<T,_R,_C>& _matrix)
                 {
-                    assert(W == _W && H == _H);
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    assert(R == _R && C == _C);
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] -= _matrix[i][j];
                 }
 
                 // Matrix multiplication assignement.
                 void operator*=(const T &val)
                 {
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                             matrix[i][j] *= val;
                 }
 
-                template<int _W, int _H>
-                void operator*=(const MyMatrix<T,_W,_H>& _matrix)
+                template<int _R, int _C>
+                void operator*=(const MyMatrix<T,_R,_C>& _matrix)
                 {
-                    assert(H == _W); // Size condition to calculate
+                    assert(C == _R); // Size condition to calculate
 
-                    MyMatrix<T, (W > _W ? W : _W),(H > _H ? H : _H())> result;
-                    for (int i = 0; i < W; i++)
-                        for (int j = 0; j < H; j++)
+                    MyMatrix<T, (R > _R ? R : _R),(C > _C ? C : _C)> result;
+                    for (int i = 0; i < R; i++)
+                        for (int j = 0; j < C; j++)
                         {
                             result[i][j] = 0;
-                            for (int k = 0; k < H; k++) result[i][j] = matrix[i][k] + _matrix[k][j];
+                            for (int k = 0; k < C; k++) result[i][j] = matrix[i][k] + _matrix[k][j];
                         }
+                }
+
+                // ----- Others Methods ----- //
+                void print()
+                {
+                    // Print data
+                    std::cout << "MyMatrix (" << &matrix << ") | R: " << R << " C: " << C << std::endl;
+                    
+                    // Print content
+                    for (int i = 0; i < R; i++)
+                    {
+                        for (int j = 0; j < C; j++) std::cout << (j == 0 ? "| " : "") << matrix[i][j] << " | ";
+                        std::cout << std::endl;
+                    }
                 }
 
         };
