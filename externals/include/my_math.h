@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 
-// ---------- DEFINES ---------- //
+// ----------- DEFINES ----------- //
 
 static bool __debug_shapes = false;
 static bool __debug_bounding_boxes = false;
@@ -18,85 +18,12 @@ static bool __debug_projections = false;
 static bool __debug_failed_projections = false;
 static bool __debug_points = false;
 
+// --------------------- ARITHMETIC --------------------- //
 
 // ---------- STRUCTURES ---------- //
-
-// Vector structure that holds values for x and y.
-typedef struct MyVector2 {
-    double x, y;
-} MyVector2;
-
-// Sgment structure that holds values for the starting point and the end point.
-typedef struct MySegment {
-    MyVector2 a, b;
-} MySegment;
-
-// Triangle structure that holds values for 3 points.
-typedef struct MyTriangle {
-    MyVector2 a, b, c;
-} MyTriangle;
-
-// Rectangle structure that holds values for the origin point, width and height.
-typedef struct MyRectangle {
-    MyVector2 origin;
-    double width, height;
-} MyRectangle;
-
-// Polygon structure that holds values for the origin point, the radius and the number of sides.
-typedef struct MyPolygon {
-    MyVector2 origin;
-    double radius;
-    double rotation;
-    int sides;
-} MyPolygon;
-
-// Circle structure that holds values for the origin point and radius.
-typedef struct MyCircle {
-    MyVector2 origin;
-    double radius;
-} MyCircle;
-
-// Union that can contain any shape.
-typedef union Shape {
-    MyVector2 vector;
-    MySegment segment;
-    MyTriangle triangle;
-    MyRectangle rectangle;
-    MyPolygon polygon;
-    MyCircle circle;
-} Shape;
-
-// Shape types enum.
-typedef enum ShapeTypes {
-    VECTOR2,
-    SEGMENT,
-    TRIANGLE,
-    RECTANGLE,
-    POLYGON,
-    CIRCLE,
-} ShapeTypes;
-
-// Structure for shape info, holds shape type and data.
-typedef struct ShapeInfo {
-    ShapeTypes type;
-    Shape data;
-} ShapeInfo;
-
-
-// ---------- CONVERSIONS --------- //
-
-// Converts a my_math 2D vector to a raylib 2D vector.
-static inline Vector2 toRayVec(MyVector2 v)
-{
-    return (Vector2){v.x, v.y};
-}
-
-// Converts a my_math rectangle to a raylib rectangle.
-static inline Rectangle toRayRec(MyRectangle r)
-{
-    return (Rectangle){r.origin.x, r.origin.y, r.width, r.height};
-}
-
+typedef struct Matrix {
+    float a,b,c,d;   
+} Matrix;
 
 // ---------- MATH FUNCTIONS ---------- //
 
@@ -183,12 +110,100 @@ static inline double clampAbove(double val, double min)
     return val;
 }
 
+// Compute linear interpolation between start and end for the parameter val (if 0 <= val <= 1: start <= return <= end).
+static inline double lerp(double val, double start, double end)
+{
+    // Source: https://stackoverflow.com/a/4353537
+    return start + val * (end - start);
+}
+
 // Remaps the given value from one range to another.
 static inline double remap(double val, double inputStart, double inputEnd, double outputStart, double outputEnd)
 {
     // Source: https://stackoverflow.com/a/3451607/13858872
     // Find how far you are into the first range, scale that distance by the ratio of sizes of the ranges, and that's how far you should be into the second range.
     return outputStart + (val - inputStart) * (outputEnd - outputStart) / (inputEnd - inputStart);
+}
+
+
+// ---------------------- GEOMETRY ---------------------- //
+
+// ---------- STRUCTURES ---------- //
+
+// Vector structure that holds values for x and y.
+typedef struct MyVector2 {
+    double x, y;
+} MyVector2;
+
+// Sgment structure that holds values for the starting point and the end point.
+typedef struct MySegment {
+    MyVector2 a, b;
+} MySegment;
+
+// Triangle structure that holds values for 3 points.
+typedef struct MyTriangle {
+    MyVector2 a, b, c;
+} MyTriangle;
+
+// Rectangle structure that holds values for the origin point, width and height.
+typedef struct MyRectangle {
+    MyVector2 origin;
+    double width, height;
+} MyRectangle;
+
+// Polygon structure that holds values for the origin point, the radius and the number of sides.
+typedef struct MyPolygon {
+    MyVector2 origin;
+    double radius;
+    double rotation;
+    int sides;
+} MyPolygon;
+
+// Circle structure that holds values for the origin point and radius.
+typedef struct MyCircle {
+    MyVector2 origin;
+    double radius;
+} MyCircle;
+
+// Union that can contain any shape.
+typedef union Shape {
+    MyVector2 vector;
+    MySegment segment;
+    MyTriangle triangle;
+    MyRectangle rectangle;
+    MyPolygon polygon;
+    MyCircle circle;
+} Shape;
+
+// Shape types enum.
+typedef enum ShapeTypes {
+    VECTOR2,
+    SEGMENT,
+    TRIANGLE,
+    RECTANGLE,
+    POLYGON,
+    CIRCLE,
+} ShapeTypes;
+
+// Structure for shape info, holds shape type and data.
+typedef struct ShapeInfo {
+    ShapeTypes type;
+    Shape data;
+} ShapeInfo;
+
+
+// ---------- CONVERSIONS --------- //
+
+// Converts a my_math 2D vector to a raylib 2D vector.
+static inline Vector2 toRayVec(MyVector2 v)
+{
+    return (Vector2){v.x, v.y};
+}
+
+// Converts a my_math rectangle to a raylib rectangle.
+static inline Rectangle toRayRec(MyRectangle r)
+{
+    return (Rectangle){r.origin.x, r.origin.y, r.width, r.height};
 }
 
 
@@ -385,6 +400,12 @@ static inline MyVector2 Vector2Rotate(MyVector2 v, double angle)
     double v_length = Vector2Length(v);
     double v_angle = Vector2GetAngle(v);
     return Vector2FromAngle(v_angle + angle, v_length);
+}
+
+// Calculates linear interpolation for a value from a start point to an end point.
+static inline MyVector2 PointLerp(double val, MyVector2 start, MyVector2 end)
+{
+    return Vector2Create(lerp(val, start.x, end.x), lerp(val, start.y, end.y));
 }
 
 
