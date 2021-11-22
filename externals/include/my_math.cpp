@@ -60,6 +60,13 @@ double arithmetic::clampUnder(double val, double max) { if (val > max) val = max
 // Clamps the given value to be superior or equal to the minimum value.
 double arithmetic::clampAbove(double val, double min) { if (val < min) val = min; return val; }
 
+// Compute linear interpolation between start and end for the parameter val (if 0 <= val <= 1: start <= return <= end).
+double arithmetic::lerp(double val, double start, double end)
+{
+    // Source: https://stackoverflow.com/a/4353537
+    return start + val * (end - start);
+}
+
 // Remaps the given value from one range to another.
 double arithmetic::remap(double val, double inputStart, double inputEnd, double outputStart, double outputEnd)
 {
@@ -192,6 +199,12 @@ void MyVector2::drawAsPoint(Color color) { DrawCircle(x, y, 2, color); }
 
 // Converts a my_math 2D vector to a raylib 2D vector.
 Vector2 MyVector2::toRayVec() { return (Vector2){ (float)x, (float)y }; }
+
+// Calculates linear interpolation for a value from a start point to an end point.
+MyVector2 PointLerp(double val, MyVector2 start, MyVector2 end)
+{
+    return MyVector2(arithmetic::lerp(val, start.x, end.x), arithmetic::lerp(val, start.y, end.y));
+}
 
 
 

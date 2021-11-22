@@ -43,30 +43,12 @@ int main(void)
 
     //! DEBUG SANDBOX: MATRIX ========================
     
-    MyMatrix<int,4,4> m0;
-    m0.setMatrixValues({
-        7,5,9,1,
-        8,6,2,4,
-        8,8,2,6,
-        8,8,2,6
-    });
-
+    MyMatrix<3,3> m0;
+    m0 = { 6, 8, 2, 4, 7, 5, 3, 1, 9 };
     m0.print();
-
-    MyMatrix<int,4,4> m1;
-    m1.setMatrixValues({
-        7,5,9,1,
-        8,6,2,4,
-        8,8,2,6,
-        8,8,2,6
-    });
-
-    m1.print();
-
-    MyMatrix<int,4,4> m2 = m0 * m1;
-
-    m2.print();
-    std::cout << "IsSquare: " << m0.isSquare() << " IsIdentity: " << m0.isIdentity() << std::endl;
+    std::cout << "Det: " << m0.det3() << " Inv: ";
+    m0.inv3().print();
+    std::cout << std::endl;
 
     //!===============================================
 
