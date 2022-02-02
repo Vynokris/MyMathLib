@@ -552,16 +552,16 @@ Vector3 Vector4::operator^(const Vector4& v) const { return Vector3((y * v.z - z
 // ------------ VECTOR4 METHODS ----------- //
 
 // Returns the middle of the given vector.
-Vector4 Vector4::getMiddle()           const { return Vector4(x / 2, y / 2, z / 2, w); }
+Vector4 Vector4::getMiddle() const { return Vector4(x / 2, y / 2, z / 2, w); }
 
 // Homogenizes the vector4 by dividing it by w.
-void Vector4::homogenize()                   { *this = Vector4(x/w, y/w, z/w, w/w); }
+void Vector4::homogenize() { *this = Vector4(x/w, y/w, z/w, w/w); }
 
 // Homogenizes the vector4 by dividing it by w.
-Vector4 Vector4::getHomogenized()      const { return Vector4(x/w, y/w, z/w, w/w); }
+Vector4 Vector4::getHomogenized() const { return Vector4(x/w, y/w, z/w, w/w); }
 
 // Returns the length of the given vector.
-float Vector4::getLength()             const { return sqrt(arithmetic::sqpow(x) + arithmetic::sqpow(y) + arithmetic::sqpow(z)); }
+float Vector4::getLength()        const { return sqrt(arithmetic::sqpow(x) + arithmetic::sqpow(y) + arithmetic::sqpow(z)); }
 
 // Modifies the length of the given vector to correspond to the given value.
 void Vector4::setLength(const float& length) { *(this) = Vector4(getAngleTheta(), getAnglePhi(), length, true); }
@@ -583,28 +583,27 @@ Vector4 Vector4::getNormalized() const
 }
 
 // Negates both of the coordinates of the given vector.
-void Vector4::negate()                                      { *(this) = Vector4(-x, -y, -z, w); }
+void Vector4::negate() { *(this) = Vector4(-x, -y, -z, w); }
 
 // Negates both of the coordinates of the given vector.
-Vector4 Vector4::getNegated()                         const { return Vector4(-x, -y, -z, w); }
+Vector4 Vector4::getNegated() const { return Vector4(-x, -y, -z, w); }
 
 // Copies the signs from the source vector to the destination vector.
-void Vector4::copysign(Vector4 source)                      { *(this) = Vector4(std::copysign(x, source.x), std::copysign(y, source.y), std::copysign(z, source.z), w); }
+void Vector4::copysign(Vector4 source) { *(this) = Vector4(std::copysign(x, source.x), std::copysign(y, source.y), std::copysign(z, source.z), w); }
 
 // Copies the signs from the source vector to the destination vector.
-Vector4 Vector4::getCopiedSign(Vector4 source)        const { return Vector4(std::copysign(x, source.x), std::copysign(y, source.y), std::copysign(z, source.z), w); }
+Vector4 Vector4::getCopiedSign(Vector4 source) const { return Vector4(std::copysign(x, source.x), std::copysign(y, source.y), std::copysign(z, source.z), w); }
 
 // Interprets the vector as a point and returns the distance to another point.
 float Vector4::getDistanceFromPoint(const Vector4& p) const { return Vector4(*this, p, w).getLength(); }
 
 // Returns the angle (in radians) of the given vector.
 float Vector4::getAngleTheta() const  {  return acosf(z / getLength()); }
+
 float Vector4::getAnglePhi()   const 
 { 
-    if (x > 0)
-        return atanf(y / x);
-    if (x < 0)
-        return atanf(y / x) + PI;
+    if (x > 0) return atanf(y / x);
+    if (x < 0) return atanf(y / x) + PI;
     return PI / 2;
 }
 
@@ -719,13 +718,19 @@ void Triangle3::move(const Vector3& vec)
 // ------------------------------ COLLISIONS ------------------------------ //
 
 // Returns true if the given point is colliding with the given circle.
-bool collisions::collisionCirclePoint(geometry2D::Circle c, geometry2D::Vector2 p) { return (c.origin.getDistanceFromPoint(p) <= c.radius ? true : false); }
+bool collisions2D::collisionCirclePoint(geometry2D::Circle c, geometry2D::Vector2 p)
+{
+    return (c.origin.getDistanceFromPoint(p) <= c.radius ? true : false);
+}
 
 // Returns true if the given circles are in collision.
-bool collisions::collisionCircles(geometry2D::Circle c1, geometry2D::Circle c2)    { return (c1.origin.getDistanceFromPoint(c2.origin) <= c1.radius + c2.radius ? true : false); }
+bool collisions2D::collisionCircles(geometry2D::Circle c1, geometry2D::Circle c2)
+{
+    return (c1.origin.getDistanceFromPoint(c2.origin) <= c1.radius + c2.radius ? true : false);
+}
 
 // Checks for collision between two rectangles.
-bool collisions::collisionAABB(geometry2D::Rectangle rec1, geometry2D::Rectangle rec2)
+bool collisions2D::collisionAABB(geometry2D::Rectangle rec1, geometry2D::Rectangle rec2)
 {
     return (rec1.origin.x + rec1.width  >= rec2.origin.x              &&
             rec1.origin.x               <= rec2.origin.x + rec2.width &&
@@ -734,12 +739,14 @@ bool collisions::collisionAABB(geometry2D::Rectangle rec1, geometry2D::Rectangle
 }
 
 // Returns true if the given point is colliding with the given Segment2.
-bool collisions::collisionSegment2Point(geometry2D::Segment2 Segment2, geometry2D::Vector2 point)
+bool collisions2D::collisionSegment2Point(geometry2D::Segment2 Segment2, geometry2D::Vector2 point)
 {
     if (arithmetic::roundInt(Vector2(Segment2) ^ Vector2(Segment2.a, point)) == 0)
     {
-        if ((point.x >= Segment2.a.x && point.x <= Segment2.b.x) || (point.y >= Segment2.a.y && point.y <= Segment2.b.y) ||
-            (point.x <= Segment2.a.x && point.x >= Segment2.b.x) || (point.y <= Segment2.a.y && point.y >= Segment2.b.y))
+        if ((point.x >= Segment2.a.x && point.x <= Segment2.b.x) || 
+            (point.y >= Segment2.a.y && point.y <= Segment2.b.y) ||
+            (point.x <= Segment2.a.x && point.x >= Segment2.b.x) || 
+            (point.y <= Segment2.a.y && point.y >= Segment2.b.y))
         {
             return true;
         }
@@ -748,7 +755,7 @@ bool collisions::collisionSegment2Point(geometry2D::Segment2 Segment2, geometry2
 }
 
 // Returns true if the given projections are colliding each others
-bool collisions::collisionProjections(geometry2D::Segment2 projection1, geometry2D::Segment2 projection2)
+bool collisions2D::collisionProjections(geometry2D::Segment2 projection1, geometry2D::Segment2 projection2)
 {
     return (collisionSegment2Point(projection1, projection2.a) ||
             collisionSegment2Point(projection1, projection2.b) ||
@@ -758,32 +765,51 @@ bool collisions::collisionProjections(geometry2D::Segment2 projection1, geometry
 
 // ------------------------------ RENDER 3D ------------------------------ //
 
-arithmetic::Matrix<4, 4> render3D::CreateTranslationMatrix(const Vector3& translation)
+arithmetic::Matrix<4, 4> render3D::getTranslationMatrix(const Vector3& translation)
 {
-
+    return arithmetic::Matrix<4,4>({ 1, 0, 0, translation.x },
+                                   { 0, 1, 0, translation.y },
+                                   { 0, 0, 1, translation.z },
+                                   { 0, 0, 0, 1});
 }
 
-arithmetic::Matrix<4, 4> render3D::CreateScaleMatrix      (const Vector3& scale)
+arithmetic::Matrix<4, 4> render3D::getScaleMatrix (const Vector3& scale)
 {
-    
+    return arithmetic::Matrix<4,4>({ scale.x, 0, 0, 0 },
+                                   { 0, scale.y, 0, 0 },
+                                   { 0, 0, scale.z, 0 },
+                                   { 0, 0, 0, 1 });
 }
 
-arithmetic::Matrix<4, 4> render3D::CreateXRotationMatrix  (float angle)
+arithmetic::Matrix<4, 4> render3D::getXRotationMatrix (float angle)
 {
-
+    return arithmetic::Matrix<4,4>({ 1, 0, 0, 0 },
+                                   { 0, cosf(angle), -sinf(angle), 0 },
+                                   { 0, sinf(angle), cosf(angle), 0 },
+                                   { 0, 0, 0, 1 });
 }
 
-arithmetic::Matrix<4, 4> render3D::CreateYRotationMatrix  (float angle)
+arithmetic::Matrix<4, 4> render3D::getYRotationMatrix (float angle)
 {
-
+    return arithmetic::Matrix<4,4>({ cosf(angle), 0, sinf(angle), 0 },
+                                   { 0, 1, 0, 0 },
+                                   { -sinf(angle), 0, cosf(angle), 0 },
+                                   { 0, 0, 0, 1 });
 }
 
-arithmetic::Matrix<4, 4> render3D::CreateZRotationMatrix  (float angle)
+arithmetic::Matrix<4, 4> render3D::getZRotationMatrix (float angle)
 {
-
+    return arithmetic::Matrix<4,4>( { cosf(angle), -sinf(angle), 0, 0 },
+                                    { sinf(angle), cosf(angle), 0, 0 },
+                                    { 0, 0, 1, 0 },
+                                    { 0, 0, 0, 1 });
 }
 
-arithmetic::Matrix<4, 4> render3D::CreateTransformMatrix  (const Vector3& rotation, const Vector3& position, const Vector3& scale)
+arithmetic::Matrix<4, 4> render3D::getTransformMatrix (const Vector3& rotation, const Vector3& position, const Vector3& scale)
 {
-
+    return getTranslationMatrix(position) *
+           getXRotationMatrix(rotation.x) * 
+           getYRotationMatrix(rotation.y) *
+           getZRotationMatrix(rotation.z) *
+           getScaleMatrix(scale);
 }

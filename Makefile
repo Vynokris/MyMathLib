@@ -1,6 +1,6 @@
-CFLAGS=-O0 -g #-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
+CFLAGS=-O0 -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable
 CPPFLAGS= -Iexternals/include
-LDLIBS=-lraylib -lm -ldl -lpthread
+LDLIBS= -lm -lpthread
 LDFLAGS=-Lexternals/libs
 
 OBJS=externals/include/my_math.o tests/test_math.o
