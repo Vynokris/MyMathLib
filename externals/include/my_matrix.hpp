@@ -24,7 +24,26 @@ class Matrix
         float m[R][C];
 
         // ----- Constructors & Destructor ----- //
-        Matrix() { assert(R >= 2 && C >= 2); }
+        Matrix(bool identity = false) 
+        { 
+            assert(R >= 2 && C >= 2);
+
+            if (!identity)
+            {
+                for (int i = 0; i < R; i++)
+                    for (int j = 0; j < C; j++)
+                        m[i][j] = 0;
+            }
+            else
+            {
+                for (int i = 0; i < R; i++)
+                    for (int j = 0; j < C; j++)
+                        if (i == j)
+                            m[i][j] = 1;
+                        else
+                            m[i][j] = 0;
+            }
+        }
 
         Matrix(const Matrix<R,C>& matrix)
         {
