@@ -1,7 +1,7 @@
 #pragma once
 #include "my_math.hpp"
 
-using namespace arithmetic;
+using namespace matrix;
 using namespace geometry2D;
 using namespace geometry3D;
 
