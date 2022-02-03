@@ -1,6 +1,6 @@
 #include "my_math.hpp"
 
-// ------------------------------ ARITHMECTIC ------------------------------ //
+//* ------------------------------ ARITHMECTIC ------------------------------ *//
 
 // --------- ARITHMETIC FUNCTIONS -------- //
 
@@ -94,7 +94,7 @@ int arithmetic::getPowerOf2Above(const int& val)
 
 
 
-// ------------------------------ GEOMETRY 2D ------------------------------ //
+//* ------------------------------ GEOMETRY 2D ------------------------------ *//
 
 // --------------- VECTOR2 -------------- //
 
@@ -283,6 +283,8 @@ void Triangle2::move(const Vector2& vec)
     c += vec;
 }
 
+
+
 // -------------------- RECTANGLE -------------------- //
 
 // Constructor.
@@ -407,7 +409,7 @@ void Circle::move(const Vector2& vec) { origin += vec; }
 
 
 
-// ------------------------------ GEOMETRY 3D ------------------------------ //
+//* ------------------------------- GEOMETRY 3D ----------------------------- *//
 
 
 using namespace geometry3D;
@@ -763,53 +765,60 @@ bool collisions2D::collisionProjections(geometry2D::Segment2 projection1, geomet
             collisionSegment2Point(projection2, projection1.b));
 }
 
+
+
+
+
+
+
 // ------------------------------ RENDER 3D ------------------------------ //
 
 arithmetic::Matrix<4, 4> render3D::getTranslationMatrix(const Vector3& translation)
 {
-    return arithmetic::Matrix<4,4>({ 1, 0, 0, translation.x },
-                                   { 0, 1, 0, translation.y },
-                                   { 0, 0, 1, translation.z },
-                                   { 0, 0, 0, 1});
+    return arithmetic::Matrix<4,4>(1, 0, 0, translation.x,
+                                   0, 1, 0, translation.y,
+                                   0, 0, 1, translation.z,
+                                   0, 0, 0, 1);
 }
 
-arithmetic::Matrix<4, 4> render3D::getScaleMatrix (const Vector3& scale)
+arithmetic::Matrix<4, 4> render3D::getScaleMatrix(const Vector3& scale)
 {
-    return arithmetic::Matrix<4,4>({ scale.x, 0, 0, 0 },
-                                   { 0, scale.y, 0, 0 },
-                                   { 0, 0, scale.z, 0 },
-                                   { 0, 0, 0, 1 });
+    return arithmetic::Matrix<4,4>(scale.x, 0, 0, 0,
+                                   0, scale.y, 0, 0,
+                                   0, 0, scale.z, 0,
+                                   0, 0, 0, 1);
 }
 
-arithmetic::Matrix<4, 4> render3D::getXRotationMatrix (float angle)
+arithmetic::Matrix<4, 4> render3D::getXRotationMatrix(float angle)
 {
-    return arithmetic::Matrix<4,4>({ 1, 0, 0, 0 },
-                                   { 0, cosf(angle), -sinf(angle), 0 },
-                                   { 0, sinf(angle), cosf(angle), 0 },
-                                   { 0, 0, 0, 1 });
+    printf("%.2f, %.2f\n", cosf(angle), sinf(angle));
+    return arithmetic::Matrix<4,4>(1, 0, 0, 0,
+                                   0, cosf(angle), -sinf(angle), 0,
+                                   0, sinf(angle), cosf(angle), 0,
+                                   0, 0, 0, 1);
 }
 
-arithmetic::Matrix<4, 4> render3D::getYRotationMatrix (float angle)
+arithmetic::Matrix<4, 4> render3D::getYRotationMatrix(float angle)
 {
-    return arithmetic::Matrix<4,4>({ cosf(angle), 0, sinf(angle), 0 },
-                                   { 0, 1, 0, 0 },
-                                   { -sinf(angle), 0, cosf(angle), 0 },
-                                   { 0, 0, 0, 1 });
+    return arithmetic::Matrix<4,4>(cosf(angle), 0, sinf(angle), 0,
+                                   0, 1, 0, 0,
+                                   -sinf(angle), 0, cosf(angle), 0,
+                                   0, 0, 0, 1);
 }
 
-arithmetic::Matrix<4, 4> render3D::getZRotationMatrix (float angle)
+arithmetic::Matrix<4, 4> render3D::getZRotationMatrix(float angle)
 {
-    return arithmetic::Matrix<4,4>( { cosf(angle), -sinf(angle), 0, 0 },
-                                    { sinf(angle), cosf(angle), 0, 0 },
-                                    { 0, 0, 1, 0 },
-                                    { 0, 0, 0, 1 });
+    return arithmetic::Matrix<4,4>(cosf(angle), -sinf(angle), 0, 0,
+                                   sinf(angle), cosf(angle), 0, 0,
+                                   0, 0, 1, 0 ,
+                                   0, 0, 0, 1 );
 }
 
-arithmetic::Matrix<4, 4> render3D::getTransformMatrix (const Vector3& rotation, const Vector3& position, const Vector3& scale)
+arithmetic::Matrix<4, 4> render3D::getTransformMatrix(const Vector3& position, const Vector3& rotation, const Vector3& scale)
 {
-    return getTranslationMatrix(position) *
-           getXRotationMatrix(rotation.x) * 
-           getYRotationMatrix(rotation.y) *
-           getZRotationMatrix(rotation.z) *
-           getScaleMatrix(scale);
+    return getTranslationMatrix(position)   *
+           getYRotationMatrix  (rotation.y) *
+           getXRotationMatrix  (rotation.x) * 
+           getZRotationMatrix  (rotation.z) *
+           getScaleMatrix      (scale);
 }

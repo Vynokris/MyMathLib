@@ -3,18 +3,21 @@
 #include <my_math.inl>
 
 using namespace arithmetic;
+using namespace render3D;
 
 int main(void)
 {
-    Matrix<4, 4> m0( 
-        { 1, 0, 4, 6 },
-        { 2, 5, 0, 3 },
-        { -1, 2, 3, 5 },
-        { 2, 1, -2, 3 }
-    );
+    Matrix<4, 4> m0 = getTranslationMatrix({0, 0, 0});
+    Matrix<4, 4> m1 = getXRotationMatrix(PI);
+    Matrix<4, 4> m2 = getYRotationMatrix(0.f);
+    Matrix<4, 4> m3 = getZRotationMatrix(0.f);
+    Matrix<4, 4> m4 = getScaleMatrix({0, 0, 0});
+    Matrix<4, 4> m = getTransformMatrix({1, 1, 1}, {PI, PI, PI}, {1, 1, 1});
     m0.print();
-    Vector4 v0(1, 1, 1, 1);
-    std::cout << "v0 * m0: " << (v0 * m0).x << ", " << (v0 * m0).y << ", " << (v0 * m0).z << ", " << (v0 * m0).w << "\n";
-
+    m1.print();
+    m2.print();
+    m3.print();
+    m4.print();
+    m.print();
     return 0;
 }

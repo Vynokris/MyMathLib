@@ -74,7 +74,6 @@ namespace arithmetic
     // ---------------- MATRIX ---------------- //
 
     // Matrix class 
-    // (Web docs: https://www.bestprog.net/en/2019/08/23/c-an-example-of-creating-a-template-class-matrix-dynamic-memory-allocation/)
     template<int R, int C>
     class Matrix
     {
@@ -94,7 +93,7 @@ namespace arithmetic
             }
 
             //? NOTE: Only for Matrix 2X2.
-            Matrix(const float a, const float b, const float c, const float d)
+            Matrix(const float& a, const float& b, const float& c, const float& d)
             {
                 assert(R >= 2 && C >= 2);
                 m[0][0] = a; m[0][1] = b;
@@ -102,9 +101,9 @@ namespace arithmetic
             }
 
             //? NOTE: Only for Matrix 3X3.
-            Matrix(const float a, const float b, const float c,
-                   const float d, const float e, const float f,
-                   const float g, const float h, const float i)
+            Matrix(const float& a, const float& b, const float& c,
+                   const float& d, const float& e, const float& f,
+                   const float& g, const float& h, const float& i)
             {
                 assert(R >= 3 && C >= 3);
                 m[0][0] = a; m[0][1] = b; m[0][2] = c;
@@ -113,13 +112,16 @@ namespace arithmetic
             }
 
             //? NOTE: Only for Matrix 4X4.
-            Matrix(const Matrix<2,2>& a, const Matrix<2,2>& b, const Matrix<2,2>& c, const Matrix<2,2>& d)
+            Matrix(const float& a, const float& b, const float& c, const float& d,
+                   const float& e, const float& f, const float& g, const float& h,
+                   const float& i, const float& j, const float& k, const float& l,
+                   const float& M, const float& n, const float& o, const float& p)
             {
                 assert(R >= 4 && C >= 4);
-                m[0][0] = a[0][0]; m[0][1] = a[0][1]; m[0][2] = b[0][0]; m[0][3] = b[0][1];
-                m[1][0] = a[1][0]; m[1][1] = a[1][1]; m[1][2] = b[1][0]; m[1][3] = b[1][1];
-                m[2][0] = c[0][0]; m[2][1] = c[0][1]; m[2][2] = d[0][0]; m[2][3] = d[0][1];
-                m[3][0] = c[1][0]; m[3][1] = c[1][1]; m[3][2] = d[1][0]; m[3][3] = d[1][1];
+                m[0][0] = a; m[0][1] = b; m[0][2] = c; m[0][3] = d;
+                m[1][0] = e; m[1][1] = f; m[1][2] = g; m[1][3] = h;
+                m[2][0] = i; m[2][1] = j; m[2][2] = k; m[2][3] = l;
+                m[3][0] = M; m[3][1] = n; m[3][2] = o; m[3][3] = p;
             }
             
             //? NOTE: For > n  matrixes.
@@ -929,5 +931,5 @@ namespace render3D
     arithmetic::Matrix<4, 4> getXRotationMatrix  (float angle);
     arithmetic::Matrix<4, 4> getYRotationMatrix  (float angle);
     arithmetic::Matrix<4, 4> getZRotationMatrix  (float angle);
-    arithmetic::Matrix<4, 4> getTransformMatrix  (const geometry3D::Vector3& rotation, const geometry3D::Vector3& position, const geometry3D::Vector3& scale);
+    arithmetic::Matrix<4, 4> getTransformMatrix  (const geometry3D::Vector3& position, const geometry3D::Vector3& rotation, const geometry3D::Vector3& scale);
 }
