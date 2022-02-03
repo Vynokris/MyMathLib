@@ -1,11 +1,21 @@
 #pragma once
 
+#include <cstdio>
 #include "my_math.hpp"
 
 namespace matrix
 {
 
-// Matrix class 
+// Forward declaration of the matrix class.
+template<int R, int C>
+class Matrix;
+
+// Shortcuts for square matrices.
+typedef Matrix<2,2> Mat2;
+typedef Matrix<3,3> Mat3;
+typedef Matrix<4,4> Mat4;
+
+// Matrix class.
 template<int R, int C>
 class Matrix
 {
@@ -57,7 +67,7 @@ class Matrix
         }
 
         //? NOTE: Only for Matrix 4x4 (from 2x2 matrices).
-        Matrix(const Matrix<2,2>& a, const Matrix<2,2>& b, const Matrix<2,2>& c, const Matrix<2,2>& d)
+        Matrix(const Mat2& a, const Mat2& b, const Mat2& c, const Mat2& d)
         {
             assert(R >= 4 && C >= 4);
             m[0][0] = a[0][0]; m[0][1] = a[0][1]; m[0][2] = b[0][0]; m[0][3] = b[0][1];
@@ -84,7 +94,7 @@ class Matrix
         const float* operator[](int index) const { return m[index]; }
 
         // Matrix copy.
-        Matrix<R,C> operator=(const Matrix<R,C>& matrix) const
+        Matrix<R,C> operator=(const Matrix<R,C>& matrix)
         {
             if (&matrix == this) return *this;
             
@@ -266,45 +276,49 @@ class Matrix
 
         float det3()
         {
-            return m[0][0] * (Matrix<2,2>){m[1][1], m[1][2], m[2][1], m[2][2]}.det2()
-                    - m[0][1] * (Matrix<2,2>){m[1][0], m[1][2], m[2][0], m[2][2]}.det2()
-                    + m[0][2] * (Matrix<2,2>){m[1][0], m[1][1], m[2][0], m[2][1]}.det2();
+            return m[0][0] * (Mat2){m[1][1], m[1][2], m[2][1], m[2][2]}.det2() - 
+                   m[0][1] * (Mat2){m[1][0], m[1][2], m[2][0], m[2][2]}.det2() + 
+                   m[0][2] * (Mat2){m[1][0], m[1][1], m[2][0], m[2][1]}.det2();
         }
 
         float det4()
         {
-            Matrix<3,3> a(m[1][1], m[1][2], m[1][3], m[2][1], m[2][2], m[2][3], m[3][1], m[3][2], m[3][3]);
-            Matrix<3,3> b(m[1][0], m[1][2], m[1][3], m[2][0], m[2][2], m[2][3], m[3][0], m[3][2], m[3][3]);
-            Matrix<3,3> c(m[1][0], m[1][1], m[1][3], m[2][0], m[2][1], m[2][3], m[3][0], m[3][1], m[3][3]);
-            Matrix<3,3> d(m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2], m[3][0], m[3][1], m[3][2]);
+            Mat3 a(m[1][1], m[1][2], m[1][3], m[2][1], m[2][2], m[2][3], m[3][1], m[3][2], m[3][3]);
+            Mat3 b(m[1][0], m[1][2], m[1][3], m[2][0], m[2][2], m[2][3], m[3][0], m[3][2], m[3][3]);
+            Mat3 c(m[1][0], m[1][1], m[1][3], m[2][0], m[2][1], m[2][3], m[3][0], m[3][1], m[3][3]);
+            Mat3 d(m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2], m[3][0], m[3][1], m[3][2]);
 
             return (a.det3() * m[0][0] - b.det3() * m[0][1] + c.det3() * m[0][2] - d.det3() * m[0][3]);
         }
 
         // Inverses.
-        Matrix<2,2> inv2()
+        Mat2 inv2()
         {
-            Matrix<2,2> val(m[1][1], -m[0][1], -m[1][0], m[0][0]);
+            Mat2 val(m[1][1], -m[0][1], -m[1][0], m[0][0]);
             return val / val.det2();
         }
 
-        Matrix<3,3> inv3()
+        Mat3 inv3()
         {
-            // Compute the cofactor matrix.
-            // Matrix<3,3> cofactor()
-
-            // return this->adj3() / this->det3();
-            // return val / val.det3();
+            Mat4 val(m[0][0], m[0][1], m[0][2], 0,
+                     m[1][0], m[1][1], m[1][2], 0,
+                     m[2][0], m[2][1], m[2][2], 0,
+                     0,       0,       0,       1);
+            val = val.inv4();
+            Mat3 result(val.m[0][0], val.m[0][1], val.m[0][2],
+                        val.m[1][0], val.m[1][1], val.m[1][2],
+                        val.m[2][0], val.m[2][1], val.m[2][2]);
+            return result;
         }
 
-        Matrix<4,4> inv4()
+        Mat4 inv4()
         {
-            Matrix<2,2> a(m[0][0], m[0][1], m[1][0], m[1][1]);
-            Matrix<2,2> b(m[0][2], m[0][3], m[1][2], m[1][3]);
-            Matrix<2,2> c(m[2][0], m[2][1], m[3][0], m[3][1]);
-            Matrix<2,2> d(m[2][2], m[2][3], m[3][2], m[3][3]);
+            Mat2 a(m[0][0], m[0][1], m[1][0], m[1][1]);
+            Mat2 b(m[0][2], m[0][3], m[1][2], m[1][3]);
+            Mat2 c(m[2][0], m[2][1], m[3][0], m[3][1]);
+            Mat2 d(m[2][2], m[2][3], m[3][2], m[3][3]);
             
-            Matrix<4,4> result =
+            Mat4 result =
             {
                 (a - b * d.inv2() * c).inv2(), -(a - b * d.inv2() * c).inv2() * b * d.inv2(),
                 -(d - c * a.inv2() * b).inv2() * c * a.inv2(), (d - c * a.inv2() * b).inv2()
@@ -317,18 +331,16 @@ class Matrix
         void print()
         {
             // Print data
-            std::cout << "Matrix (" << &m << ") | R: " << R << " C: " << C << std::endl;
+            printf("Matrix<%d,%d>\n", R, C);
             
             // Print content
             for (int i = 0; i < R; i++)
             {
-                for (int j = 0; j < C; j++) std::cout << m[i][j] << ", ";
-                std::cout << std::endl;
+                for (int j = 0; j < C; j++) printf("%.2f, ", m[i][j]);
+                printf("\n");
             }
+            printf("\n");
         }
 };
 
-typedef Matrix<2,2> Mat2;
-typedef Matrix<3,3> Mat3;
-typedef Matrix<4,4> Mat4;
 }

@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <vector>
 #include <ctime>
-#include <iostream> //! Debug.
 #include "my_matrix.hpp"
 
 #define PI 3.14159265358979323846f
