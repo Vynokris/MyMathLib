@@ -572,12 +572,9 @@ Vector3 geometry3D::point3Lerp(const float& val, const Vector3& start, const Vec
 // Returns the coordinates of a point on a sphere of radius r, using the given angles.
 Vector3 geometry3D::getSphericalCoords(const float& r, const float& theta, const float& phi)
 {
-    float sinTheta = sinf(theta);
-
-    return { r * sinTheta * cosf(phi),
+    return { r * sinf(theta) * cosf(phi),
              r * cosf(theta),
-             r * sinTheta * sinf(phi)
-    };
+             r * sinf(theta) * sinf(phi) };
 }
 
 matrix::Matrix<4, 4> geometry3D::getTranslationMatrix(const Vector3& translation)
