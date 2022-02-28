@@ -3,7 +3,6 @@
 #include <my_math.inl>
 
 using namespace matrix;
-using namespace render3D;
 
 int main(void)
 {

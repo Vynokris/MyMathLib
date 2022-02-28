@@ -12,15 +12,62 @@
 #include <cstdint>
 #include <vector>
 #include <ctime>
-#include "my_matrix.hpp"
 
-#define PI 3.14159265358979323846f
+#include <my_matrix.hpp>
 
 using namespace std;
 
+// ----------------------- DEFINES ------------------------ //
+
+#define PI 3.14159265358979323846f
+
+#define RED     (Color)   { 1, 0, 0, 1 }
+#define GREEN   (Color)   { 0, 1, 0, 1 }
+#define BLUE    (Color)   { 0, 0, 1, 1 }
+#define YELLOW  (Color)   { 1, 1, 0, 1 }
+#define CYAN    (Color)   { 0, 1, 1, 1 }
+#define MAGENTA (Color)   { 1, 0, 1, 1 }
+#define WHITE   (Color)   { 1, 1, 1, 1 }
+#define BLACK   (Color)   { 0, 0, 0, 1 }
+
+#define ColorToVec3(c) Vector3{ c.r, c.g, c.b }
+
+// ------------- GLOBAL FORWARD DECLARATION --------------- //
+
+class Color //? NOTE: [0, 1]
+{
+public:
+    float r, g, b, a = 1.f;
+    
+    Color operator+ (const Color& c) const { return { r + c.r,    g + c.g ,   b + c.b,    a + c.a  }; }
+    Color operator+ (const float& v) const { return { r + v  ,    g + v   ,   b + v  ,    a + v    }; }
+    Color operator- (const Color& c) const { return { r - c.r,    g - c.g ,   b - c.b,    a - c.a  }; }
+    Color operator- (const float& v) const { return { r - v  ,    g - v   ,   b - v  ,    a - v    }; }
+    Color operator* (const Color& c) const { return { r * c.r,    g * c.g ,   b * c.b,    a * c.a  }; }
+    Color operator* (const float& v) const { return { r * v  ,    g * v   ,   b * v  ,    a * v    }; }
+    Color operator/ (const Color& c) const { return { r / c.r,    g / c.g ,   b / c.b,    a / c.a  }; }
+    Color operator/ (const float& v) const { return { r / v  ,    g / v   ,   b / v  ,    a / v    }; }
+    void  operator+=(const Color& c)       {          r += c.r;   g += c.g;   b += c.b;   a += c.a;   }
+    void  operator+=(const float& v)       {          r += v  ;   g += v  ;   b += v  ;   a += v  ;   }
+    void  operator-=(const Color& c)       {          r -= c.r;   g -= c.g;   b -= c.b;   a -= c.a;   }
+    void  operator-=(const float& v)       {          r -= v  ;   g -= v  ;   b -= v  ;   a -= v  ;   }
+    void  operator*=(const Color& c)       {          r *= c.r;   g *= c.g;   b *= c.b;   a *= c.a;   }
+    void  operator*=(const float& v)       {          r *= v  ;   g *= v  ;   b *= v  ;   a *= v  ;   }
+    void  operator/=(const Color& c)       {          r /= c.r;   g /= c.g;   b /= c.b;   a /= c.a;   }
+    void  operator/=(const float& v)       {          r /= v  ;   g /= v  ;   b /= v  ;   a /= v  ;   }
+    bool  operator==(const Color& c)       { return   r == c.r && g == c.g && b == c.b && a == c.a;   }
+    bool  operator!=(const Color& c)       { return   r != c.r || g != c.g || b != c.b || a != c.a;   }
+
+    // Returns the hue of an RGB color (0 <= rgba <= 1).
+    float getHue();
+};
+typedef struct { float h, s, v; } HSV;
+
 // --------------------- ARITHMECTIC ---------------------- //
+
 namespace arithmetic
 {
+
     // --------- ARITHMETIC FUNCTIONS ---------- //
     
     // Fast inverse square root from Quake III.
@@ -39,7 +86,7 @@ namespace arithmetic
     float sqpow(const float& val);
 
     // Returns 1 if the given value is positive or null, and -1 if it is negative.
-    int signOf(const float& val);
+    int signof(const float& val);
 
     // Converts the given angle from degrees to radians.
     float degToRad(const float& deg);
@@ -58,6 +105,24 @@ namespace arithmetic
 
     // Compute linear interpolation between start and end for the parameter val (if 0 <= val <= 1: start <= return <= end).
     float lerp(const float& val, const float& start, const float& end);
+
+    // Compute the linear interpolation factor that returns val when lerping between start and end.
+    float getLerp(const float& val, const float& start, const float& end);
+
+    // Linear interpolation between two given colors.
+    Color colorLerp(const float& val, const Color& start, const Color& end);
+
+    // Blend between two HSV colors.
+    HSV blendHSV(const HSV& col0, const HSV& col1);
+
+    // Convert an RGB color (0 <= rgba <= 1) to HSV.
+    HSV   RGBtoHSV(const Color& color);
+
+    // Convert an HSV color to RGB.
+    Color HSVtoRGB(const HSV& hsv, const float& alpha = 1);
+
+    // Shifts the hue of the given color.
+    Color colorShift(const Color& color, const float& hue);
 
     // Remaps the given value from one range to another.
     float remap(const float& val, const float& inputStart, const float& inputEnd, const float& outputStart, const float& outputEnd);
@@ -107,17 +172,20 @@ namespace geometry2D
 
             // -- Operators -- //
 
-                                  void    operator=(const Vector2& v);
-            template <typename T> Vector2 operator+(const T& val) const;
-            template <typename T> Vector2 operator-(const T& val) const;
-            template <typename T> Vector2 operator*(const T& val) const;
-            template <typename T> Vector2 operator/(const T &val) const;
+                                  void    operator= (const Vector2& v);
+            template <typename T> bool    operator==(const T& val) const;
+            template <typename T> bool    operator!=(const T& val) const;
+            template <typename T> Vector2 operator+ (const T& val) const;
+            template <typename T> Vector2 operator- (const T& val) const;
+            template <typename T> Vector2 operator* (const T& val) const;
+            template <typename T> Vector2 operator/ (const T &val) const;
             template <typename T> void    operator+=(const T &val);
             template <typename T> void    operator-=(const T &val);
             template <typename T> void    operator*=(const T &val);
             template <typename T> void    operator/=(const T &val);
-                                  float   operator&(const Vector2& v) const;
-                                  float   operator^(const Vector2& v) const;
+                                  float   operator& (const Vector2& v) const;
+                                  float   operator^ (const Vector2& v) const;
+                                  Vector2 operator- ()             const;
 
             // -- Methods -- //
 
@@ -136,8 +204,6 @@ namespace geometry2D
 
             // Negates both of the coordinates of the given vector.
             void negate();
-            // Negates both of the coordinates of the given vector.
-            Vector2 getNegated() const;
 
             // Copies the signs from the source vector to the destination vector.
             void copysign(const Vector2& source);
@@ -338,19 +404,22 @@ namespace geometry3D
     class Vector4;
     class Segment3;
     class Triangle3;
-
-    /*
-    struct Transform
-    {
-        Vector3 translation;
-        Vector3 rotation;
-        Vector3 scale;
-    };
-    */
-
+    class Plane3;
+    struct Vertex;
+    struct Plane;
 
     // Calculates linear interpolation for a value from a start point to an end point.
     Vector3 point3Lerp(const float& val, const Vector3& start, const Vector3& end);
+
+    // Returns the coordinates of a point on a sphere of radius r, using the given angles.
+    Vector3 getSphericalCoords(const float& r, const float& theta, const float& phi);
+
+    matrix::Matrix<4, 4> getTranslationMatrix(const geometry3D::Vector3& translation);
+    matrix::Matrix<4, 4> getScaleMatrix      (const geometry3D::Vector3& scale);
+    matrix::Matrix<4, 4> getXRotationMatrix  (float angle);
+    matrix::Matrix<4, 4> getYRotationMatrix  (float angle);
+    matrix::Matrix<4, 4> getZRotationMatrix  (float angle);
+    matrix::Matrix<4, 4> getTransformMatrix  (const geometry3D::Vector3& position, const geometry3D::Vector3& rotation, const geometry3D::Vector3& scale, const bool& reverse = false);
 
     // Vector class that holds values for x, y and z (3 dimensions).
     class Vector3
@@ -361,7 +430,7 @@ namespace geometry3D
 
             // -- Constructors & Destructor -- //
             Vector3();                                                                               // Null vector.
-            Vector3(const float& _x, const float& _y, const float& _z);                     // Vector with 3 coordinates.
+            Vector3(const float& _x, const float& _y, const float& _z);                              // Vector with 3 coordinates.
             Vector3(const Vector3& p1,  const Vector3& p2);                                          // Vector from 2 points.
             Vector3(const Segment3& seg);                                                            // Vector from semgent.
             Vector3(const float& theta, const float& phi, const float& length, const bool& isAngle); // Vector from angles (useless bool).
@@ -370,6 +439,8 @@ namespace geometry3D
             // -- Operators -- //
 
                                   void    operator= (const Vector3& other);
+            template <typename T> bool    operator==(const T& val) const;
+            template <typename T> bool    operator!=(const T& val) const;
             template <typename T> Vector3 operator+ (const T& val) const;
             template <typename T> Vector3 operator- (const T& val) const;
             template <typename T> Vector3 operator* (const T& val) const;
@@ -380,6 +451,7 @@ namespace geometry3D
             template <typename T> void    operator/=(const T &val);
                                   float   operator& (const Vector3& val) const;
                                   Vector3 operator^ (const Vector3& val) const;
+                                  Vector3 operator- ()                   const;
 
             // -- Methods -- //
 
@@ -398,8 +470,6 @@ namespace geometry3D
 
             // Negates both of the coordinates of the given vector.
             void negate();
-            // Negates both of the coordinates of the given vector.
-            Vector3 getNegated() const;
 
             // Copies the signs from the source vector to the destination vector.
             void copysign(const Vector3& source);
@@ -443,6 +513,8 @@ namespace geometry3D
             // -- Operators -- //
             
                                   void    operator= (const Vector4& other);
+            template <typename T> bool    operator==(const T& val) const;
+            template <typename T> bool    operator!=(const T& val) const;
             template <typename T> Vector4 operator+ (const T& val) const;
             template <typename T> Vector4 operator- (const T& val) const;
             template <typename T> Vector4 operator* (const T& val) const;
@@ -453,6 +525,7 @@ namespace geometry3D
             template <typename T> void    operator/=(const T &val);
                                   float   operator& (const Vector4& val) const;
                                   Vector3 operator^ (const Vector4& val) const;
+                                  Vector4 operator- ()                   const;
 
             // -- Methods -- //
 
@@ -476,8 +549,6 @@ namespace geometry3D
 
             // Negates both of the coordinates of this vector.
             void negate();
-            // Negates both of the coordinates of this vector.
-            Vector4 getNegated() const;
 
             // Copies the signs from the source vector to the destination vector.
             void copysign(Vector4 source);
@@ -501,56 +572,105 @@ namespace geometry3D
             void rotate(const float& theta, const float& phi);
 
             // Creates a Vector3 from this vector.
-            Vector3 toVector3(bool homogenizeVec = true);
+            Vector3 toVector3(bool homogenizeVec = false) const;
     };
+
+    class Plane3
+    {
+        public:
+            // Attributes.
+            Vector3 normal; // Normalized normal vector to the plane.
+            float distance; // The distance from the origin.
+
+            // Constructor.
+            Plane3();
+            Plane3(const Vector3& _normal, const float& _distance);
+
+            // Destructor.
+            ~Plane3() {}
+
+            // Returns 0 if the given segment doesn't clip against this plane.
+            // Else, returns 1 if point A clips, 2 if point B clips and 3 if both clip.
+            int doesSegmentClip(const Segment3& seg) const;
+
+            // Clips the given segment against this plane.
+            Segment3 clipSegment(Segment3 seg) const;
+
+            // Returns true if the given triangle clips against theis plane, false if not.
+            bool doesTriangleClip(const Triangle3& triangle) const;
+
+            // Clips the given triangle against this plane (returns 0-4 points).
+            std::vector<Vertex> clipTriangle(const Triangle3& triangle) const;
+    };
+
+    struct Vertex
+    {
+        Vector3 pos;            // Pos
+        Vector3 normal;         // Normal
+        Color   color;          // Color
+        geometry2D::Vector2 uv; // Texture coordinates
+    };
+
+    struct Frustum
+    {
+        geometry3D::Plane3 up;
+        geometry3D::Plane3 down;
+        geometry3D::Plane3 left;
+        geometry3D::Plane3 right;
+        geometry3D::Plane3 near;
+        geometry3D::Plane3 far;
+    };
+
+    // Returns an array of vertices that result of the clipping of the given triangle against the given frustum.
+    std::vector<geometry3D::Triangle3> clipHomogeneousTriangle(const geometry3D::Triangle3& triangle, float pointAbsW[3]);
 
     // Segment3 structure that holds values for the starting point and the end point.
     class Segment3
     {
         public :
             // Attributes.
-            Vector3 a, b;
+            Vertex a, b;
 
             // Constructors.
             Segment3();                                                              // Null Segment3.
-            Segment3(const Vector3& _a,  const Vector3& _b);                   // Segment3 from points.
-            Segment3(const Vector3& origin, const Vector3& vec, const bool& vector); // Segment3 from point and vector.
+            Segment3(const Vertex& _a,  const Vertex& _b);                   // Segment3 from points.
+            Segment3(const Vertex& origin, const Vector3& vec, const bool& vector); // Segment3 from point and vector.
 
             // Destructor.
             ~Segment3() {}
 
             // Returns the center of mass of the Segment3.
-            Vector3 getCenterOfMass() const;
+            Vertex getCenterOfMass() const;
 
             // Returns the vertex of the Segment3 that corresponds to the given index.
-            Vector3 getVertex(const int& index) const;
+            Vertex getVertex(const int& index) const;
 
             // Moves the Segment3 by the given vector.
             void move(const Vector3& vec);
     };
 
-    // Triangle3 structure that holds values for 3 points.
+    // Triangle3 structure that holds values for 3 vertices.
     class Triangle3
     {
         public:
             // Attributes.
-            Vector3 a, b, c;
+            Vertex a, b, c;
 
             // Constructor.
-            Triangle3();                                                                 // Null triangle.
-            Triangle3(const Vector3& _a, const Vector3& _b, const Vector3& _c); // Triangle3 from points.
+            Triangle3();                                                     // Null triangle.
+            Triangle3(const Vertex& _a, const Vertex& _b, const Vertex& _c); // Triangle3 from vertices.
 
             // Destructor.
             ~Triangle3() {}
             
             // Returns the center of mass of the triangle.
-            Vector3 getCenterOfMass() const;
+            Vertex getCenterOfMass() const;
 
             // Returns the side of the triangle that corresponds to the given index.
             Segment3 getSide(const int& index) const;
 
             // Returns the vertex of the triangle that corresponds to the given index.
-            Vector3 getVertex(const int& index) const;
+            Vertex getVertex(const int& index) const;
 
             // Moves the triangle by the given vector.
             void move(const Vector3& vec);
@@ -594,16 +714,11 @@ namespace collisions2D
     template <typename T1, typename T2> bool collisionSAT(T1 shape1, T2 shape2);
 }
 
-// -------------------- RENDER 3D -------------------- //
-
-namespace render3D
-{
-    matrix::Matrix<4, 4> getTranslationMatrix(const geometry3D::Vector3& translation);
-    matrix::Matrix<4, 4> getScaleMatrix      (const geometry3D::Vector3& scale);
-    matrix::Matrix<4, 4> getXRotationMatrix  (float angle);
-    matrix::Matrix<4, 4> getYRotationMatrix  (float angle);
-    matrix::Matrix<4, 4> getZRotationMatrix  (float angle);
-    matrix::Matrix<4, 4> getTransformMatrix  (const geometry3D::Vector3& position, const geometry3D::Vector3& rotation, const geometry3D::Vector3& scale);
-}
-
 #include "my_math.inl"
+
+// When all programming gods have truned their backs,
+// praise the blessed meowing duck.
+/*     _
+   .__(.)< (MEOW)
+    \___)
+*/
