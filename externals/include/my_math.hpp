@@ -575,34 +575,7 @@ namespace geometry3D
             Vector3 toVector3(bool homogenizeVec = false) const;
     };
 
-    class Plane3
-    {
-        public:
-            // Attributes.
-            Vector3 normal; // Normalized normal vector to the plane.
-            float distance; // The distance from the origin.
-
-            // Constructor.
-            Plane3();
-            Plane3(const Vector3& _normal, const float& _distance);
-
-            // Destructor.
-            ~Plane3() {}
-
-            // Returns 0 if the given segment doesn't clip against this plane.
-            // Else, returns 1 if point A clips, 2 if point B clips and 3 if both clip.
-            int doesSegmentClip(const Segment3& seg) const;
-
-            // Clips the given segment against this plane.
-            Segment3 clipSegment(Segment3 seg) const;
-
-            // Returns true if the given triangle clips against theis plane, false if not.
-            bool doesTriangleClip(const Triangle3& triangle) const;
-
-            // Clips the given triangle against this plane (returns 0-4 points).
-            std::vector<Vertex> clipTriangle(const Triangle3& triangle) const;
-    };
-
+    // A point in 3D space with rendering data.
     struct Vertex
     {
         Vector3 pos;            // Pos
@@ -610,19 +583,6 @@ namespace geometry3D
         Color   color;          // Color
         geometry2D::Vector2 uv; // Texture coordinates
     };
-
-    struct Frustum
-    {
-        geometry3D::Plane3 up;
-        geometry3D::Plane3 down;
-        geometry3D::Plane3 left;
-        geometry3D::Plane3 right;
-        geometry3D::Plane3 near;
-        geometry3D::Plane3 far;
-    };
-
-    // Returns an array of vertices that result of the clipping of the given triangle against the given frustum.
-    std::vector<geometry3D::Triangle3> clipHomogeneousTriangle(const geometry3D::Triangle3& triangle, float pointAbsW[3]);
 
     // Segment3 structure that holds values for the starting point and the end point.
     class Segment3
