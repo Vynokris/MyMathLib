@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\a.perche\\Documents\\C# projects\\MyMathLib\\MyMathLib.csproj": {}
+    "C:\\Users\\r.serra\\Documents\\GP1\\CsProjects\\MyMathLibCs\\MyMathLib.csproj": {}
   },
   "projects": {
-    "C:\\Users\\a.perche\\Documents\\C# projects\\MyMathLib\\MyMathLib.csproj": {
+    "C:\\Users\\r.serra\\Documents\\GP1\\CsProjects\\MyMathLibCs\\MyMathLib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\a.perche\\Documents\\C# projects\\MyMathLib\\MyMathLib.csproj",
+        "projectUniqueName": "C:\\Users\\r.serra\\Documents\\GP1\\CsProjects\\MyMathLibCs\\MyMathLib.csproj",
         "projectName": "MyMathLib",
-        "projectPath": "C:\\Users\\a.perche\\Documents\\C# projects\\MyMathLib\\MyMathLib.csproj",
-        "packagesPath": "C:\\Users\\a.perche\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\a.perche\\Documents\\C# projects\\MyMathLib\\obj\\",
+        "projectPath": "C:\\Users\\r.serra\\Documents\\GP1\\CsProjects\\MyMathLibCs\\MyMathLib.csproj",
+        "packagesPath": "C:\\Users\\r.serra\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\r.serra\\Documents\\GP1\\CsProjects\\MyMathLibCs\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\a.perche\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\r.serra\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
