@@ -359,8 +359,8 @@ namespace MyMathLib
 
         // Structure for shape info, holds shape type and data.
         public class ShapeInfo {
-            ShapeTypes Type;
-            Shape Data;
+            public ShapeTypes Type;
+            public Shape Data;
 
             public ShapeInfo() { Type = ShapeTypes.Triangle; Data.triangle = new Triangle2(); }
             public ShapeInfo(ShapeTypes type, Shape data) { Type = type; Data = data; }

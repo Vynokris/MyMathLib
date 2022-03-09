@@ -12,226 +12,189 @@ namespace MyMathLib
     public static class Collisions2D
     {
         // Returns the smallest rectangle that contanins the given shape.
-        static inline MyRectangle getBoundingBox(ShapeInfo shape)
+        public static Rectangle2 GetBoundingBox(ShapeInfo shape)
         {
             // If the shape is a circle.
-            if (shape.type == CIRCLE)
+            if (shape.Type == ShapeTypes.Circle)
             {
-                //! Debug render.
-                if (__debug_bounding_boxes) {
-                    DrawMyRectangle(RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2), GRAY);
-                }
-
-                return RectangleCreate(Vector2SubstractVal(shape.data.circle.origin, shape.data.circle.radius), shape.data.circle.radius * 2, shape.data.circle.radius * 2);
+                return new Rectangle2(shape.Data.circle.O.X - shape.Data.circle.Radius, 
+                                      shape.Data.circle.O.Y - shape.Data.circle.Radius, 
+                                      shape.Data.circle.Radius * 2, 
+                                      shape.Data.circle.Radius * 2);
             }
 
             // Get the shape's vertices information.
-            int vertices_num = getVerticesNum(shape);
+            int vertices_num = shape.GetVerticesNum();
 
             // Create the min and max values for x and y.
-            MyVector2 vertex = ShapeGetVertex(shape, 0);
-            double xmin = vertex.x;
-            double xmax = vertex.x;
-            double ymin = vertex.y;
-            double ymax = vertex.y;
+            Vector2 vertex = shape.GetVertex(0);
+            float Xmin = vertex.X;
+            float Xmax = vertex.X;
+            float Ymin = vertex.Y;
+            float Ymax = vertex.Y;
 
             // Loop though the vertices and find the min and max values for x and y.
             for (int i = 1; i < vertices_num; i++)
             {
-                vertex = ShapeGetVertex(shape, i);
-                if (vertex.x <= xmin)
-                    xmin = vertex.x;
-                if (vertex.x >= xmax)
-                    xmax = vertex.x;
-                if (vertex.y <= ymin)
-                    ymin = vertex.y;
-                if (vertex.y >= ymax)
-                    ymax = vertex.y;
+                vertex = shape.GetVertex(i);
+                if (vertex.X <= Xmin)
+                    Xmin = vertex.X;
+                if (vertex.X >= Xmax)
+                    Xmax = vertex.X;
+                if (vertex.Y <= Ymin)
+                    Ymin = vertex.Y;
+                if (vertex.Y >= Ymax)
+                    Ymax = vertex.Y;
             }
 
             // Create the shape's bounding box.
-            MyRectangle bounding_box = RectangleCreate(Vector2Create(xmin, ymin), xmax - xmin, ymax - ymin);
-
-            //! Debug render.
-            if (__debug_bounding_boxes) {
-                DrawMyRectangle(bounding_box, GRAY);
-            }
+            Rectangle2 bounding_box = new Rectangle2(Xmin, Ymin, Xmax - Xmin, Ymax - Ymin);
 
             return bounding_box;
         }
 
         // Returns an axis that passes through the center of the given circle and the center of the given shape.
-        static inline MySegment CircleGetAxis(MyCircle circle, ShapeInfo shape)
+        public static Segment2 CircleGetAxis(Circle2 circle, ShapeInfo shape)
         {
             // Make a segment that starts at the center of the circle, goes in the direction of the center of the shape and is of length 1.
-            return SegmentFromVector2(circle.origin,
-                                      Vector2Normalize(Vector2FromPoints(circle.origin, ShapeCenterOfMass(shape))));
+            return new Segment2(circle.O,
+                                Vector2FromPoints(circle.O, shape.GetCenterOfMass()).GetNormalized(), true);
         }
 
         // Returns the axis of the given shapes that corresponds to the given index.
-        static inline MySegment ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int index)
+        public static Segment2 ShapesGetAxis(ShapeInfo shape1, ShapeInfo shape2, int index)
         {
-            assert (index < getSidesNum(shape1) + getSidesNum(shape2));
+            Debug.Assert(index < shape1.GetSidesNum() + shape2.GetSidesNum());
 
-            MySegment side;
-            MySegment axis;
+            Segment2 side;
+            Segment2 axis;
 
             // If the given index refers to an axis of the first shape...
-            if (index < getSidesNum(shape1))
+            if (index < shape1.GetSidesNum())
             {
                 // If the first shape is not a circle, get the side pointed to by the index and calculate its normal.
-                if (shape1.type != CIRCLE) {
-                    side = ShapeGetSide(shape1, index);
-                    axis = SegmentFromVector2(Vector2DivideVal(Vector2Add(side.a, side.b), 2),
-                                                Vector2Normal(Vector2Normalize(Vector2FromSegment(side))));
+                if (shape1.Type != ShapeTypes.Circle) {
+                    side = shape1.GetSide(index);
+                    axis = new Segment2((side.A + side.A) / 2,
+                                         Vector2FromSegment(side).GetNormalized().GetNormal(), true);
                 }
                 // If the first shape is a circle, get its axis.
-                else
-                    axis = CircleGetAxis(shape1.data.circle, shape2);
+                else { 
+                    axis = CircleGetAxis(shape1.Data.circle, shape2);
+                }
             }
             // If the given index refers to an axis of the second shape...
             else
             {
                 // If the second shape is not a circle, get the side pointed to by the index and calculate its normal.
-                if (shape2.type != CIRCLE) {
-                    side = ShapeGetSide(shape2, index - getSidesNum(shape1));
-                    axis = SegmentFromVector2(Vector2DivideVal(Vector2Add(side.a, side.b), 2),
-                                                Vector2Normal(Vector2Normalize(Vector2FromSegment(side))));
+                if (shape2.Type != ShapeTypes.Circle) {
+                    side = shape2.GetSide(index - shape1.GetSidesNum());
+                    axis = new Segment2((side.A + side.B) / 2,
+                                         Vector2FromSegment(side).GetNormalized().GetNormal(), true);
                 }
                 // If the second shape is a circle, get its axis.
-                else
-                    axis = CircleGetAxis(shape2.data.circle, shape1);
-            }
-
-            //! Debug render.
-            if (__debug_axes) {
-                DrawMyVector2(Vector2MultiplyVal(Vector2FromSegment(axis), 100), axis.a, BLUE);
+                else { 
+                    axis = CircleGetAxis(shape2.Data.circle, shape1);
+                }
             }
 
             return axis;
         }
 
         // Returns true if the given point is colliding with the given circle.
-        static inline bool collisionCirclePoint(MyCircle c, MyVector2 p)
+        public static bool CollisionCirclePoint(Circle2 c, Vector2 p)
         {
-            return (distancePoints(c.origin, p) <= c.radius ? true : false);
+            return Vector2FromPoints(c.O, p).Length() <= c.Radius;
         }
 
         // Returns true if the given circles are in collision.
-        static inline bool collisionCircles(MyCircle c1, MyCircle c2)
+        public static bool CollisionCircles(Circle2 c1, Circle2 c2)
         {
-            return (distancePoints(c1.origin, c2.origin) <= c1.radius + c2.radius ? true : false);
+            return Vector2FromPoints(c1.O, c2.O).Length() <= c1.Radius + c2.Radius;
         }
 
         // Checks for collision between two rectangles.
-        static inline bool collisionAABB(MyRectangle rec1, MyRectangle rec2)
+        public static bool CollisionAABB(Rectangle2 rec1, Rectangle2 rec2)
         {
-            if (rec1.origin.x + rec1.width >= rec2.origin.x &&
-                rec1.origin.x <= rec2.origin.x + rec2.width &&
-                rec1.origin.y + rec1.height >= rec2.origin.y &&
-                rec1.origin.y <= rec2.origin.y + rec2.height) 
+            if (rec1.O.X + rec1.W >= rec2.O.X &&
+                rec1.O.X <= rec2.O.X + rec2.W &&
+                rec1.O.Y + rec1.H >= rec2.O.Y &&
+                rec1.O.Y <= rec2.O.Y + rec2.H) 
             {
                 return true;
             }
-            else {
+            else 
+            {
                 return false;
             }
         }
 
         // Project a shape onto a given axis.
-        static inline MySegment projectShapeOnAxis(MySegment axis, ShapeInfo shape)
+        public static Segment2 ProjectShapeOnAxis(Segment2 axis, ShapeInfo shape)
         {
             // Get the axis' vector.
-            MyVector2 axis_vec = Vector2FromSegment(axis);
+            Vector2 axis_vec = Vector2FromSegment(axis);
 
             // Handle circles.
-            if (shape.type == CIRCLE)
+            if (shape.Type == ShapeTypes.Circle)
             {
                 // Project the circle's origin onto the axis.
-                MyVector2 origin_projection = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, shape.data.circle.origin), axis_vec)));
+                Vector2 origin_projection = axis.A + axis_vec * Vector2FromPoints(axis.A, shape.Data.circle.O).Dot(axis_vec);
 
                 // Create a segment of the circle's projection.
-                MySegment circle_projection = SegmentCreate(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)),
-                                                          Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)));
-
-                //! Debug render.
-                if (__debug_points) {
-                    DrawMyPoint(shape.data.circle.origin, WHITE);
-                    DrawMyPoint(Vector2Add      (origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), SKYBLUE);
-                    DrawMyPoint(Vector2Substract(origin_projection, Vector2MultiplyVal(axis_vec, shape.data.circle.radius)), BLUE);
-                }
-
-                //! Debug render.
-                if (__debug_projections) {
-                    DrawMySegment(circle_projection, ORANGE);
-                }
+                Segment2 circle_projection = new Segment2(origin_projection - axis_vec * shape.Data.circle.Radius,
+                                                          origin_projection + axis_vec * shape.Data.circle.Radius);
         
                 return circle_projection;
             }
 
-            //* https://fr.wikipedia.org/wiki/Projection_orthogonale#Projet%C3%A9_orthogonal_sur_une_droite,_distance
+            // https://fr.wikipedia.org/wiki/Projection_orthogonale#Projet%C3%A9_orthogonal_sur_une_droite,_distance
 
             // Get all the vertices of the shape.
-            int vertices_num = getVerticesNum(shape);
-            MyVector2 vertex;
-            MyVector2 projected_points[vertices_num];
+            int vertices_num = shape.GetVerticesNum();
+            Vector2 vertex;
+            Vector2[] projected_points = new Vector2[vertices_num];
 
             // Loop over the vertices of the shape and get their projections onto the axis.
             for (int i = 0; i < vertices_num; i++)
             {
-                vertex = ShapeGetVertex(shape, i);
-                projected_points[i] = Vector2Add(axis.a, Vector2MultiplyVal(axis_vec, Vector2DotProduct(Vector2FromPoints(axis.a, vertex), axis_vec)));
-
-                //! Debug render.
-                if (__debug_points) {
-                    DrawCircle(projected_points[i].x, projected_points[i].y, 2, WHITE);
-                }
+                vertex = shape.GetVertex(i);
+                projected_points[i] = axis.A + axis_vec * Vector2FromPoints(axis.A, vertex).Dot(axis_vec);
             }
 
             // Find the closest and farthest points from the axis origin.
-            MyVector2 min_point = projected_points[0];
-            MyVector2 max_point = min_point;
+            Vector2 min_point = projected_points[0];
+            Vector2 max_point = min_point;
 
             for (int i = 0; i < vertices_num; i++)
             {
-                if (Vector2Copysign(projected_points[i], axis_vec).x > Vector2Copysign(max_point, axis_vec).x ||
-                    Vector2Copysign(projected_points[i], axis_vec).y > Vector2Copysign(max_point, axis_vec).y)
+                if (projected_points[i].GetCopiedSign(axis_vec).X > max_point.GetCopiedSign(axis_vec).X ||
+                    projected_points[i].GetCopiedSign(axis_vec).Y > max_point.GetCopiedSign(axis_vec).Y)
                 {
                     max_point = projected_points[i];
                 }
 
-                if (Vector2Copysign(projected_points[i], axis_vec).x < Vector2Copysign(min_point, axis_vec).x ||
-                    Vector2Copysign(projected_points[i], axis_vec).y < Vector2Copysign(min_point, axis_vec).y)
+                if (projected_points[i].GetCopiedSign(axis_vec).X < min_point.GetCopiedSign(axis_vec).X ||
+                    projected_points[i].GetCopiedSign(axis_vec).Y < min_point.GetCopiedSign(axis_vec).Y)
                 {
                     min_point = projected_points[i];
                 }
             }
 
-            //! Debug render.
-            if (__debug_points) {
-                DrawCircle(min_point.x, min_point.y, 2, SKYBLUE);
-                DrawCircle(max_point.x, max_point.y, 2, BLUE);
-            }
-
-            MyVector2 axis_orig_to_min_point = Vector2FromPoints(axis.a, min_point);
-            MySegment projection = SegmentFromVector2(Vector2Add(axis.a, axis_orig_to_min_point), 
-                                                    Vector2FromPoints(min_point, max_point));
-
-            //! Debug render.
-            if (__debug_projections) {
-                DrawMySegment(projection, ORANGE);
-            }
+            Vector2 axis_orig_to_min_point = Vector2FromPoints(axis.A, min_point);
+            Segment2 projection = new Segment2(axis.A + axis_orig_to_min_point, 
+                                               Vector2FromPoints(min_point, max_point), true);
 
             return projection;
         }
 
         // Returns true if the given point is colliding with the given segment.
-        static inline bool collisionSegmentPoint(MySegment segment, MyVector2 point)
+        public static bool CollisionSegmentPoint(Segment2 segment, Vector2 point)
         {
-            if (roundInt(Vector2CrossProduct(Vector2FromSegment(segment), Vector2FromPoints(segment.a, point))) == 0)
+            if (RoundInt(Vector2FromSegment(segment).Cross(Vector2FromPoints(segment.A, point))) == 0)
             {
-                if ((point.x >= segment.a.x && point.x <= segment.b.x) || (point.y >= segment.a.y && point.y <= segment.b.y) ||
-                    (point.x <= segment.a.x && point.x >= segment.b.x) || (point.y <= segment.a.y && point.y >= segment.b.y))
+                if ((point.X >= segment.A.X && point.X <= segment.B.X) || (point.Y >= segment.A.Y && point.Y <= segment.B.Y) ||
+                    (point.X <= segment.A.X && point.X >= segment.B.X) || (point.Y <= segment.A.Y && point.Y >= segment.B.Y))
                 {
                     return true;
                 }
@@ -240,12 +203,12 @@ namespace MyMathLib
         }
 
         // Returns true if the given projections are colliding each others
-        static inline bool collisionProjections(MySegment projection1, MySegment projection2)
+        public static bool CollisionProjections(Segment2 projection1, Segment2 projection2)
         {
-            if (collisionSegmentPoint(projection1, projection2.a) ||
-                collisionSegmentPoint(projection1, projection2.b) ||
-                collisionSegmentPoint(projection2, projection1.a) ||
-                collisionSegmentPoint(projection2, projection1.b))
+            if (CollisionSegmentPoint(projection1, projection2.A) ||
+                CollisionSegmentPoint(projection1, projection2.B) ||
+                CollisionSegmentPoint(projection2, projection1.A) ||
+                CollisionSegmentPoint(projection2, projection1.B))
             {
                 return true;
             }
@@ -253,49 +216,36 @@ namespace MyMathLib
         }
 
         // Checks for collision between two given shapes.
-        static inline bool collisionSAT(ShapeInfo shape1, ShapeInfo shape2)
+        public static bool CollisionSAT(ShapeInfo shape1, ShapeInfo shape2)
         {
             // If both shapes are circles, don't use SAT.
-            if (shape1.type == CIRCLE && shape2.type == CIRCLE)
-                return collisionCircles(shape1.data.circle, shape2.data.circle);
+            if (shape1.Type == ShapeTypes.Circle && shape2.Type == ShapeTypes.Circle)
+                return CollisionCircles(shape1.Data.circle, shape2.Data.circle);
 
             // If both shapes are rectangles, don't use SAT.
-            else if (shape1.type == RECTANGLE && shape2.type == RECTANGLE)
-                return collisionAABB(shape1.data.rectangle, shape2.data.rectangle);
+            else if (shape1.Type == ShapeTypes.Rectangle && shape2.Type == ShapeTypes.Rectangle)
+                return CollisionAABB(shape1.Data.rectangle, shape2.Data.rectangle);
 
             // Check for collisions on the shapes' bounding boxes to not have to check if they are not in collision.
-            else if (collisionAABB(getBoundingBox(shape1), getBoundingBox(shape2)))
+            else if (CollisionAABB(GetBoundingBox(shape1), GetBoundingBox(shape2)))
             {
-                //! Debug render.
-                if (__debug_shapes) {
-                    DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
-                }
-
                 // Get the number of sides of both shapes.
-                int sides = getSidesNum(shape1) + getSidesNum(shape2);
+                int sides = shape1.GetSidesNum() + shape2.GetSidesNum();
 
                 // Loop over all of the axes.
                 for (int i = 0; i < sides; i++)
                 {
                     // Project both shapes onto the axis.
-                    MySegment projection1 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
-                    MySegment projection2 = projectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
+                    Segment2 projection1 = ProjectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape1);
+                    Segment2 projection2 = ProjectShapeOnAxis(ShapesGetAxis(shape1, shape2, i), shape2);
 
                     // If the projections don't overlap, the shapes are not in collision.
-                    if (!collisionProjections(projection1, projection2))
+                    if (!CollisionProjections(projection1, projection2))
                     {
-                        //! Debug render.
-                        if (__debug_failed_projections) {
-                            DrawMySegment(projection1, PINK); DrawMySegment(projection2, PINK);
-                        }
                         return false;
                     }
                 }
                 return true;
-            }
-            //! Debug render.
-            if (__debug_shapes) {
-                DrawShape(shape1, Vector2Zero(), GREEN); DrawShape(shape2, Vector2Zero(), GREEN);
             }
 
             return false;
