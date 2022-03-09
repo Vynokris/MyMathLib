@@ -83,6 +83,30 @@ namespace MyMathLib
             float vAngle = v.GetAngle();
             v = new Vector2((float)Cos(vAngle + angle) * vLength, (float)Sin(vAngle + angle) * vLength);
         }
+
+        // Rotates the given vector by the given angle.
+        public static Vector2 GetRotated(this ref Vector2 v, float angle)
+        {
+            float vLength = v.Length();
+            float vAngle = v.GetAngle();
+            return new Vector2((float)Cos(vAngle + angle) * vLength, (float)Sin(vAngle + angle) * vLength);
+        }
+
+        // Rotates the vector as a point around the given origin.
+        public static void RotateAsPoint(this ref Vector2 point, in float angle, in Vector2 origin)
+        {
+            Vector2 origToPoint = Vector2FromPoints(origin, point);
+            origToPoint.Rotate(angle);
+            point = origin + origToPoint;
+        }
+
+        // Rotates the vector as a point around the given origin.
+        public static Vector2 GetRotatedAsPoint(in this Vector2 point, in float angle, in Vector2 origin)
+        {
+            Vector2 origToPoint = Vector2FromPoints(origin, point);
+            origToPoint.Rotate(angle);
+            return origin + origToPoint;
+        }
         
         // Calculates linear interpolation for a value from a start point to an end point.
         public static Vector2 Point2Lerp(float val, Vector2 start, Vector2 end)
