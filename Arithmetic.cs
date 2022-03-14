@@ -20,13 +20,16 @@ namespace MyMathLib
         public static float SqPow(float val)    { return val * val;  }
 
         // Returns 1 if the given value is positive or null, and -1 if it is negative.
-        public static int SignOf(float val)     { if (val == 0) return 1; return (int)val / Abs((int)val); }
+        public static int SignOf(float val)     { if ((int)val == 0) return 1; return (int)val / Abs((int)val); }
 
         // Converts the given angle from degrees to radians.
-        public static float Deg2Rad(float val)  { return val * ((float)PI / 180f); }
+        public static float DegToRad(float val)  { return val * ((float)PI / 180f); }
 
         // Converts the given angle from radians to degrees.
         public static float RadToDeg(float rad) { return rad * (180f / (float)PI); }
+        
+        // Clamps the given value between the maximum and minimum values.
+        public static float Clamp(float val, float min, float max)  { if (val > max) val = max; if (val < min) val = min; return val; }
 
         // Clamps the given value to be inferior or equal to the maximum value.
         public static float ClampUnder(float val, float max)        { if (val > max) val = max; return val; }
@@ -45,12 +48,12 @@ namespace MyMathLib
         }
 
         // Linear interpolation between two given colors.
-        public static Color ColorLerp(float val, Color start, Color end)
+        public static Colors.RGBA ColorLerp(float val, Colors.RGBA start, Colors.RGBA end)
         {
-            return new Color(start.R + val * (end.R - start.R),
-                             start.G + val * (end.G - start.G),
-                             start.B + val * (end.B - start.B),
-                             start.A + val * (end.A - start.A));
+            return new Colors.RGBA(start.R + val * (end.R - start.R),
+                            start.G + val * (end.G - start.G),
+                            start.B + val * (end.B - start.B),
+                            start.A + val * (end.A - start.A));
         }
 
         // Remaps the given value from one range to another.
@@ -73,7 +76,7 @@ namespace MyMathLib
         }
 
         // Blend between two HSV colors.
-        public static HSV BlendHSV(HSV color0, HSV color1)
+        public static Colors.HSV BlendHSV(Colors.HSV color0, Colors.HSV color1)
         {
             Vector2 totalVec = Geometry2D.Vector2FromAngle(color0.H, 1)
                              + Geometry2D.Vector2FromAngle(color1.H, 1);
@@ -82,7 +85,7 @@ namespace MyMathLib
             float avgSat = (color0.S + color1.S) / 2;
             float avgVal = (color0.V + color1.V) / 2;
 
-            return new HSV(avgHue, avgSat, avgVal);
+            return new Colors.HSV(avgHue, avgSat, avgVal);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Numerics;
 using static System.Math;
 using System.Diagnostics;
+using static MyMathLib.Colors;
 using static MyMathLib.Geometry2D;
 using static MyMathLib.Arithmetic;
 
@@ -13,7 +14,7 @@ namespace MyMathLib
     {
         Vector3 pos;
         Vector3 normal;
-        Color   color;
+        RGBA    color;
         Vector2 uv;
     }
 
@@ -227,24 +228,21 @@ namespace MyMathLib
         public class Vertex
         {
             public Vector3 Pos, Normal;
-            public Color   Col;
+            public RGBA    Col;
             public Vector2 UV;
 
             // Null vertex.
-            public Vertex() { Pos = Normal = Vector3Zero(); Col = new Color(); UV = Vector2Zero(); }
+            public Vertex() { Pos = Normal = Vector3Zero(); Col = new RGBA(); UV = Vector2Zero(); }
 
             // Vertex from position, normal, color and UV.
-            public Vertex(Vector3 pos, Vector3 normal, Color color, Vector2 uv) { Pos = pos; Normal = normal; Col = color; UV = uv; }
+            public Vertex(Vector3 pos, Vector3 normal, RGBA color, Vector2 uv) { Pos = pos; Normal = normal; Col = color; UV = uv; }
         }
 
 
         // ---- Segment3 ---- //
-        public class Segment3
+        public struct Segment3
         {
             public Vertex A, B;
-
-            // Null Segment3.
-            public Segment3() { A = B = new Vertex(); }
 
             // Segement3 from points.
             public Segment3(Vertex a, Vertex b) { A = a;  B = b; }
@@ -270,12 +268,9 @@ namespace MyMathLib
 
 
         // ---- Triangle3 ---- //
-        public class Triangle3
+        public struct Triangle3
         {
             public Vertex A, B, C;
-
-            // Null triangle.
-            public Triangle3() { A = B = C = new Vertex(); }
 
             // Triangle from 3 points.
             public Triangle3(Vertex a, Vertex b, Vertex c) { A = a; B = b; C = c; }
@@ -286,7 +281,7 @@ namespace MyMathLib
                 return new Vertex(
                     new Vector3 ( (A.Pos.X    + B.Pos.X    + C.Pos.X)    / 3, (A.Pos.Y    + B.Pos.Y    + C.Pos.Y)    / 3, (A.Pos.Z    + B.Pos.Z    + C.Pos.Z)    / 3 ),
                     new Vector3 ( (A.Normal.X + B.Normal.X + C.Normal.X) / 3, (A.Normal.Y + B.Normal.Y + C.Normal.Y) / 3, (A.Normal.Z + B.Normal.Z + C.Normal.Z) / 3 ),
-                    new Color   ( (A.Col.R    + B.Col.R    + C.Col.R)    / 3, (A.Col.G    + B.Col.G    + C.Col.G)    / 3, (A.Col.B    + B.Col.B    + C.Col.B)    / 3, (A.Col.A + B.Col.A + C.Col.A) / 3 ),
+                    new RGBA    ( (A.Col.R    + B.Col.R    + C.Col.R)    / 3, (A.Col.G    + B.Col.G    + C.Col.G)    / 3, (A.Col.B    + B.Col.B    + C.Col.B)    / 3, (A.Col.A + B.Col.A + C.Col.A) / 3 ),
                     new Vector2 ( (A.UV.X     + B.UV.X     + C.UV.X)     / 3, (A.UV.Y     + B.UV.Y     + C.UV.Y)     / 3 )
                 ); 
             }
