@@ -10,35 +10,36 @@ Transform::Transform(const bool& _isCamera)
 }
 
 Transform::Transform(const Vector3& position, const Quaternion& rotation, const Vector3& _scale, const bool& _isCamera)
-    : pos(position), rot(rotation), scale(_scale), isCamera(_isCamera)
+    : pos(position), rot(rotation), scale(_scale), isCamera(_isCamera), eulerRot(rotation.ToEuler())
 {
     UpdateLocalMat();
 }
 
 // ----- Position ----- //
 Vector3 Transform::GetPosition() const { return pos; }
+Vector3 Transform::GetWorldPosition() const { return worldPos; }
 void    Transform::SetPosition(const Vector3& position) { pos  = position; UpdateLocalMat(); }
 void    Transform::Move       (const Vector3& movement) { pos += movement; UpdateLocalMat(); }
 
 // ----- Forward ----- //
-Vector3 Transform::Forward() const                    { return rot.ToAngleAxis().axis; }
-Vector3 Transform::Up()      const                    { return Vector3(0); } // TODO: fix this.
-Vector3 Transform::Right()   const                    { return Vector3(0); } // TODO: fix this.
-void    Transform::SetForward(const Vector3& forward) { UpdateLocalMat(); }     // TODO: fix this.
+Vector3 Transform::Forward() const                    { return (Vector4(0,0,1,0) * (rot.ToMatrix() * parentMat)).ToVector3().GetNormalized(); }
+Vector3 Transform::Up()      const                    { return (Vector4(0,1,0,0) * (rot.ToMatrix() * parentMat)).ToVector3().GetNormalized(); }
+Vector3 Transform::Right()   const                    { return (Vector4(1,0,0,0) * (rot.ToMatrix() * parentMat)).ToVector3().GetNormalized(); }
+void    Transform::SetForward(const Vector3& forward) { rot = AngleAxis(TWOPI, forward); UpdateLocalMat(); }
 
 // ----- Rotation ----- //
-Quaternion Transform::GetRotation() const                     { return rot; }
-void       Transform::SetRotation(const Quaternion& rotation) { rot = rotation; UpdateLocalMat(); }
-void       Transform::Rotate     (const Quaternion& rotation) 
-{
-    rot = rotation.RotateQuat(rot);
-    UpdateLocalMat(); 
-}
+Quaternion Transform::GetRotation() const                     { return rot;      }
+Vector3    Transform::GetEulerRot() const                     { return eulerRot; }
+void       Transform::SetRotation(const Quaternion& rotation) { rot = rotation;                 eulerRot = rot.ToEuler(); UpdateLocalMat(); }
+void       Transform::Rotate     (const Quaternion& rotation) { rot = rotation.RotateQuat(rot); eulerRot = rot.ToEuler(); UpdateLocalMat(); }
+void       Transform::SetEulerRot(const Vector3& euler)       { eulerRot  = euler; rot = Quaternion::FromEuler(eulerRot); UpdateLocalMat(); }
+void       Transform::RotateEuler(const Vector3& euler)       { eulerRot += euler; rot = Quaternion::FromEuler(eulerRot); UpdateLocalMat(); }
 
 // ----- Scale ----- //
 Vector3 Transform::GetScale()        const         { return scale;   }
 Vector3 Transform::GetUniformScale() const         { return std::max(scale.x, std::max(scale.y, scale.z)); }
-void    Transform::SetScale(const Vector3& _scale) { scale = _scale; UpdateLocalMat(); }
+void    Transform::SetScale(const Vector3& _scale) { scale = _scale;  UpdateLocalMat(); }
+void    Transform::Scale   (const Vector3& _scale) { scale += _scale; UpdateLocalMat(); }
 
 // ----- Is Camera ----- //
 bool Transform::IsCamera() const                   { return isCamera; }
@@ -47,6 +48,13 @@ void Transform::SetIsCamera(const bool& _isCamera) { isCamera = _isCamera; Updat
 // ----- Multiple Values ----- //
 void Transform::SetPosRot(const Vector3& position, const Quaternion& rotation)                        { pos = position; rot = rotation; UpdateLocalMat(); }
 void Transform::SetValues(const Vector3& position, const Quaternion& rotation, const Vector3& _scale) { pos = position; rot = rotation; scale = _scale; UpdateLocalMat(); }
+
+void Transform::SetParentMat(const Mat4& mat)
+{
+    parentMat = mat;
+    worldMat  = localMat * parentMat;
+    worldPos  = (pos.ToVector4() * parentMat).ToVector3(true);
+}
 
 // ----- Interpolation ----- //
 Transform Transform::Lerp(const Transform& start, const Transform& dest, const float& val, const bool& useSlerp)
@@ -61,6 +69,9 @@ Transform Transform::Lerp(const Transform& start, const Transform& dest, const f
 // ----- Matrices ----- //
 void Transform::UpdateLocalMat() 
 {
-    if (!isCamera) localMat = Mat4::FromTransform( pos, rot, scale);
-    else           localMat = Mat4::FromTransform(-pos, rot, { 1, 1, 1 }, true);
+    localMat = Mat4::FromTransform( pos, rot, scale);
+    worldMat = localMat * parentMat;
+    worldPos = (pos.ToVector4() * parentMat).ToVector3(true);
+    
+    if (isCamera) viewMat = Mat4::FromTransform(-pos, rot, { 1, 1, 1 }, true);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "Vector3.h"
 
 namespace Maths
 {
@@ -6,11 +7,12 @@ namespace Maths
     class Quaternion;
     typedef Matrix<4, 4> Mat4;
 
-    // AngleAxis class that holds values for an angle and an axis of rotation.
+    // - AngleAxis: angle and axis of rotation - //
     class AngleAxis
     {
     public:
-        float   angle;
+        // -- Attributes -- //
+        float   angle = 0;
         Vector3 axis;
 
         // -- Constructors -- //
